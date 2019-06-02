@@ -1,0 +1,30 @@
+{
+  "name": "floatpr-backend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.0.0",
+    "express": "^4.17.1",
+    "pg": "^7.11.0",
+    "superagent": "^5.0.5"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "melee",
+    "floatpr",
+    "float",
+    "Washington pr",
+    "pr"
+  ],
+  "author": "Kris Esvelt (Digital)",
+  "license": "MIT",
+  "bugs": "",
+  "homepage": ""
+}
