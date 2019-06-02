@@ -27,14 +27,14 @@ client.connect();
 app.get('/hitChallonge', (req, res) => {
   try {
     superagent.get(`https://DigitalSpaceman:${process.env.REACT_APP_CHALLONGE_API_KEY}@api.challonge.com/v1/tournaments.json`)
-    // .withCredentials()
-    .then((response) => {
-      console.log(response);
-      res.append(response);
-      return res;
-    });
+      // .withCredentials()
+      .then((response) => {
+        console.log(response);
+        res.append(response);
+        return res;
+      });
   }
-  catch(error) {
+  catch (error) {
     console.error(error);
   }
 });
