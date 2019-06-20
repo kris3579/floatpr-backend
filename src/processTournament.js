@@ -107,7 +107,7 @@ const processTournamentSets = (sets, players) => {
   sets.forEach((set) => {
     storeSetInDatabase(set.set, players);
   });
-  recalculatePlayerStatistics(sets);
+  recalculatePlayerStatistics();
 };
 
 const storeSetInDatabase = (set, players) => {

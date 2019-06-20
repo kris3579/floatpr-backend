@@ -42,10 +42,10 @@ router.get('/hitChallonge/:tournament', (req, next) => {
 //   sendNotificationToDiscord(req.body);
 // });
 
-// router.get('/combineResults/:playerIdOne/:playerIdTwo', (res, req) => {
-//   const playerIdOne = req.params.playerIdOne;
-//   const playerIdTwo = req.params.playerIdTwo;
-//   combineResults(playerIdOne, playerIdTwo);
+// router.get('/combineResults/:playerOneName/:playerTwoName', (res, req) => {
+//   const playerOneName = req.params.playerOneName;
+//   const playerTwoName = req.params.playerTwoName;
+//   combineResults(playerOneName, playerTwoName);
 // });
 
 // router.get('/updateMains/:playerId', (req) => {

@@ -8,16 +8,16 @@ const client = require('./client');
 client.connect();
 
 const recalculatePlayerStatistics = () => {
-  const players = getPlayersFromDatabase();
+  const players = getPlayerNamesFromDatabase();
   const sets = getSetsFromDatabase();
 
   processSetsPlayed(players, sets);
 };
 
-const getPlayersFromDatabase = () => {
+const getPlayerNamesFromDatabase = () => {
   const players = {};
   console.log('Querying database for complete list of players');
-  client.query('SELECT * FROM players;')
+  client.query('SELECT name FROM players;')
     .then((response) => {
       response.body.forEach((player) => {
         players[player.name] = {
