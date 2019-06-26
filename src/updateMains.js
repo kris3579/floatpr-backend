@@ -2,7 +2,7 @@
 
 const client = require('./client');
 
-client.connect();
+// client.connect();
 
 const updateMains = (playerId, requestBody) => {
   console.log('Updating mains for player');

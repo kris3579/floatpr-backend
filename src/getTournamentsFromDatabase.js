@@ -2,7 +2,7 @@
 
 const client = require('./client');
 
-client.connect();
+// client.connect();
 
 const getTournamentFromDatabase = () => {
   console.log('Querying database for list of tournaments');

@@ -5,7 +5,7 @@ const { Outcome } = require('glicko-two');
 
 const client = require('./client');
 
-client.connect();
+// client.connect();
 
 const recalculatePlayerStatistics = () => {
   const players = getPlayerNamesFromDatabase();

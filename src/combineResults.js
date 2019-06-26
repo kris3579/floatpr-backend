@@ -3,7 +3,7 @@
 const client = require('./client');
 const recalculatePlayerStatistics = require('./recalculatePlayerStatistics');
 
-client.connect();
+// client.connect();
 
 const combineResults = (playerOneName, playerTwoName) => {
   client.query(`UPDATE matches SET winnerName = ${playerOneName} WHERE winnerName = ${playerTwoName};`);

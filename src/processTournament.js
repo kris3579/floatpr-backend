@@ -5,7 +5,7 @@ const superagent = require('superagent');
 const client = require('./client');
 const recalculatePlayerStatistics = require('./recalculatePlayerStatistics');
 
-client.connect();
+// client.connect();
 
 const processTournament = (tournament) => {
   console.log('Processing');
@@ -59,14 +59,14 @@ const getPlayerNamesFromChallonge = (tournament) => {
     });
 };
 
-const processPlayersInTournament = (players, tournament) => {
-  players.forEach((player) => {
-    checkPlayersForName(player, tournament);
+const processPlayersInTournament = async (players, tournament) => {
+  await players.forEach((player) => {
+    checkPlayersForNameAndStoreIfNotFound(player, tournament);
   });
   getSetsForTournament(tournament, players);
 };
 
-const checkPlayersForName = (player, tournament) => {
+const checkPlayersForNameAndStoreIfNotFound = (player, tournament) => {
   console.log('Checking database for player');
   return client.query(`SELECT * FROM players WHERE players.name = $1;`, [player[0]])
     .then((data) => {
@@ -74,22 +74,18 @@ const checkPlayersForName = (player, tournament) => {
         console.log('Player found in database: Not stored');
       }
       if (data.rowCount === 0) {
-        storePlayerInDatabase(player[1], player[0], tournament.completed_at);
+        const queryConfig = {
+          text: 'INSERT INTO players (id, name, rating, mains, setWins, setLosses, gameWins, gameLosses, setWinRate, gameWinRate, attendance, ratingHistory, setWinRateHistory, gameWinRateHistory, lastActivity) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);',
+          values: [player[1], player[0], 1800, ['unknown'], 0, 0, 0, 0, 100, 100, 0, [], [], [], tournament.completed_at],
+        };
+
+        console.log('Storing player in database', player[1], player[0]);
+        client.query(queryConfig);
       }
     })
     .catch((error) => {
       throw error;
     });
-};
-
-const storePlayerInDatabase = (playerId, name, tournamentDate) => {
-  const queryConfig = {
-    text: 'INSERT INTO players (id, name, rating, mains, setWins, setLosses, gameWins, gameLosses, setWinRate, gameWinRate, attendance, ratingHistory, setWinRateHistory, gameWinRateHistory, lastActivity) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);',
-    values: [playerId, name, 1800, ['unknown'], 0, 0, 0, 0, 100, 100, 0, [], [], [], tournamentDate],
-  };
-
-  console.log('Storing player in database', playerId, name);
-  client.query(queryConfig);
 };
 
 const getSetsForTournament = (tournament, players) => {
@@ -107,7 +103,7 @@ const processTournamentSets = (sets, players) => {
   sets.forEach((set) => {
     storeSetInDatabase(set.set, players);
   });
-  recalculatePlayerStatistics();
+  // recalculatePlayerStatistics();
 };
 
 const storeSetInDatabase = (set, players) => {
