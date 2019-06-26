@@ -2,9 +2,9 @@
 
 const client = require('./client');
 
-client.connect();
+// client.connect();
 
-const getPlayersFromDatabase = () => {
+const getActivePlayersFromDatabase = () => {
   console.log('Querying database for list of players');
   client.query('SELECT * FROM players;')
     .then((data) => {
@@ -12,17 +12,25 @@ const getPlayersFromDatabase = () => {
       data.rowCount.forEach((row) => {
         playerList.push(row);
       });
+      filterInactivePlayers(playerList);
       orderListByRating(playerList);
+      return playerList;
     })
     .catch((error) => {
       throw error;
     });
 };
 
+const filterInactivePlayers = (playerList) => {
+  console.log('Filtering out inactive players');
+  playerList.filter();
+};
+
 const orderListByRating = (playerList) => {
+  console.log('Sorting list by rating');
   playerList.sort(function(a, b){
     return a.rating - b.rating;
   });
 };
 
-module.exports = getPlayersFromDatabase;
+module.exports = getActivePlayersFromDatabase;

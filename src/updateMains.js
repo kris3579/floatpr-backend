@@ -2,7 +2,7 @@
 
 const client = require('./client');
 
-client.connect();
+// client.connect();
 
 const updateMains = (playerId, requestBody) => {
   console.log('Updating mains for player');
@@ -15,7 +15,9 @@ const updateMains = (playerId, requestBody) => {
   if (doWeDeletePrevious === false) {
     getCurrentMainsFromDatabase(playerId, newMains);
   }
-  storeNewMainsInDatabase(playerId, newMains);
+  if (doWeDeletePrevious === true) {
+    storeNewMainsInDatabase(playerId, newMains);
+  }
 };
 
 const getCurrentMainsFromDatabase = (playerId, newMains) => {
@@ -35,6 +37,7 @@ const storeNewMainsInDatabase = (playerId, newMains) => {
   const unknownIndex = newMains.indexOf('unknown');
 
   if (unknownIndex !== -1) {
+    // Method other than pop?
     newMains.pop(unknownIndex);
   }
 

@@ -1,13 +1,11 @@
 'use strict';
 
 const superagent = require('superagent');
-const Player = require('glicko-two');
-const { Outcome } = require('glicko-two');
 
 const client = require('./client');
 const recalculatePlayerStatistics = require('./recalculatePlayerStatistics');
 
-client.connect();
+// client.connect();
 
 const processTournament = (tournament) => {
   console.log('Processing');
@@ -29,7 +27,6 @@ const checkDatabaseForTournament = (tournament) => {
       throw error;
     });
 };
-
 
 const storeTournamentInDatabase = (tournament) => {
   const name = tournament.name;
@@ -62,14 +59,14 @@ const getPlayerNamesFromChallonge = (tournament) => {
     });
 };
 
-const processPlayersInTournament = (players, tournament) => {
-  players.forEach((player) => {
-    checkPlayersForName(player, tournament);
+const processPlayersInTournament = async (players, tournament) => {
+  await players.forEach((player) => {
+    checkPlayersForNameAndStoreIfNotFound(player, tournament);
   });
-  getMatchesForTournament(tournament, players);
+  getSetsForTournament(tournament, players);
 };
 
-const checkPlayersForName = (player, tournament) => {
+const checkPlayersForNameAndStoreIfNotFound = (player, tournament) => {
   console.log('Checking database for player');
   return client.query(`SELECT * FROM players WHERE players.name = $1;`, [player[0]])
     .then((data) => {
@@ -77,7 +74,13 @@ const checkPlayersForName = (player, tournament) => {
         console.log('Player found in database: Not stored');
       }
       if (data.rowCount === 0) {
-        storePlayerInDatabase(player[1], player[0], tournament.completed_at);
+        const queryConfig = {
+          text: 'INSERT INTO players (id, name, rating, mains, setWins, setLosses, gameWins, gameLosses, setWinRate, gameWinRate, attendance, ratingHistory, setWinRateHistory, gameWinRateHistory, lastActivity) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);',
+          values: [player[1], player[0], 1800, ['unknown'], 0, 0, 0, 0, 100, 100, 0, [], [], [], tournament.completed_at],
+        };
+
+        console.log('Storing player in database', player[1], player[0]);
+        client.query(queryConfig);
       }
     })
     .catch((error) => {
@@ -85,40 +88,30 @@ const checkPlayersForName = (player, tournament) => {
     });
 };
 
-const storePlayerInDatabase = (playerId, name, tournamentDate) => {
-  const queryConfig = {
-    text: 'INSERT INTO players (id, name, rating, mains, wins, losses, winRate, attendance, ratingDev, volatility, ratingHistory, winRateHistory, lastActivity) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);',
-    values: [playerId, name, 1500, ['unknown'], 0, 0, 100, 0, 350, 0.06, [], [], tournamentDate],
-  };
-
-  console.log('Storing player in database', playerId, name);
-  client.query(queryConfig);
-};
-
-const getMatchesForTournament = (tournament, players) => {
-  console.log('Querying Challonge for tournament matches');
-  superagent.get(`https://DigitalSpaceman:${process.env.CHALLONGE_API_KEY}@api.challonge.com/v1/tournaments/${tournament.id}/matches.json`)
+const getSetsForTournament = (tournament, players) => {
+  console.log('Querying Challonge for tournament sets');
+  superagent.get(`https://DigitalSpaceman:${process.env.CHALLONGE_API_KEY}@api.challonge.com/v1/tournaments/${tournament.id}/sets.json`)
     .then((response) => {
-      processTournamentMatches(response.body, tournament, players);
+      processTournamentSets(response.body, players);
     })
     .catch((error) => {
       throw error;
     });
 };
 
-const processTournamentMatches = (matches, tournament, players) => {
-  matches.forEach((match) => {
-    storeMatchInDatabase(match.match, players);
+const processTournamentSets = (sets, players) => {
+  sets.forEach((set) => {
+    storeSetInDatabase(set.set, players);
   });
-  recalculatePlayerStatistics(matches);
+  // recalculatePlayerStatistics();
 };
 
-const storeMatchInDatabase = (match, players) => {
+const storeSetInDatabase = (set, players) => {
 
-  const id = match.id;
-  const tournamentId = match.tournament_id;
-  const scoreString = match.scores_csv;
-  const date = match.completed_at;
+  const id = set.id;
+  const tournamentId = set.tournament_id;
+  const scoreString = set.scores_csv;
+  const date = set.completed_at;
   const splitScores = scoreString.split('');
 
   let winnerName = '';
@@ -127,10 +120,10 @@ const storeMatchInDatabase = (match, players) => {
   let loserScore = 0;
 
   for (let i = 0; i < players.length; i++) {
-    if (players[i][1] === match.winner_id) {
+    if (players[i][1] === set.winner_id) {
       winnerName = players[i][0];
     }
-    if (players[i][1] === match.loser_id) {
+    if (players[i][1] === set.loser_id) {
       loserName = players[i][0];
     }
   }
@@ -145,11 +138,11 @@ const storeMatchInDatabase = (match, players) => {
   }
 
   const queryConfig = {
-    text: 'INSERT INTO matches (id, winnerName, loserName, tournamentId, winnerScore, loserScore, date) VALUES ($1, $2, $3, $4, $5, $6, $7);',
+    text: 'INSERT INTO sets (id, winnerName, loserName, tournamentId, winnerScore, loserScore, date) VALUES ($1, $2, $3, $4, $5, $6, $7);',
     values: [id, winnerName, loserName, tournamentId, winnerScore, loserScore, date],
   };
 
-  console.log(`Storing match in database Winner: ${winnerName}, Loser: ${loserName}`);
+  console.log(`Storing set in database Winner: ${winnerName}, Loser: ${loserName}`);
   client.query(queryConfig);
 };
 
