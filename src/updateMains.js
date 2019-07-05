@@ -2,8 +2,6 @@
 
 const client = require('./client');
 
-// client.connect();
-
 const updateMains = (playerId, requestBody) => {
   console.log('Updating mains for player');
   const newMains = [];

@@ -36,7 +36,7 @@ router.get('/hitChallonge/:tournament', (req, next) => {
 //     });
 // });
 
-// router.get('/displayPlayer/:playerId', (res) => {
+// router.get('/displayPlayer/:playerTag', (res) => {
 //   const player = getPlayerFromDatabase()
 //     .then(() => {
 //       res.body.player = player;
