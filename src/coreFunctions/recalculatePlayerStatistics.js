@@ -1,8 +1,8 @@
 'use strict';
-// const Player = require('glicko-two');
-const { Player, Outcome } = require('glicko-two');
 
-const client = require('./client');
+const { createPlayerFactory, Match } = require('glicko-two');
+
+const client = require('../client');
 
 const recalculatePlayerStatistics = () => {
   let players = null;
@@ -19,6 +19,7 @@ const recalculatePlayerStatistics = () => {
 
   Promise.all([promise1, promise2])
     .then(() => {
+      console.log('Processing sets', sets);
       processSetsPlayed(players, sets);
     })
     .catch((error) => {
@@ -28,19 +29,20 @@ const recalculatePlayerStatistics = () => {
 
 const getPlayerNamesFromDatabase = (resolve) => {
   const players = {};
+
   console.log('Querying database for complete list of players');
   client.query('SELECT name FROM players;')
     .then((data) => {
-      const glickoProfile = new Player({
+      const createPlayer = createPlayerFactory({
         defaultRating: 1800,
-        rating: 1800,
-        ratingDeviation: 350,
-        tau: 0.7,
-        volatility: 0.06
+        defaultVolatility: 0.06,
+        tau: 0.5
       });
 
       data.rows.forEach((player) => {
-        players[player.name] = {
+        const glickoProfile = createPlayer();
+
+        players[`${player.name}`] = {
           name: player.name,
           tournaments: [],
           sets: [],
@@ -55,7 +57,6 @@ const getPlayerNamesFromDatabase = (resolve) => {
           ratingHistory: [],
           setWinRateHistory: [],
           gameWinRateHistory: [],
-          lastActivity: new Date('January 1, 2000'),
           glickoProfile: glickoProfile
         };
       });
@@ -86,7 +87,7 @@ const getSetsFromDatabase = (resolve) => {
 const orderSetsByDate = (sets, resolve) => {
   console.log('Sorting sets by date');
   sets.sort((a, b) => {
-    return new Date(b.date) - new Date(a.date);
+    return new Date(a.date) - new Date(b.date);
   });
   resolve();
 };
@@ -119,35 +120,31 @@ const editPlayersBasedOnSet = (players, set) => {
   winner.setWins += 1;
   winner.gameWins += winnerScore;
   winner.gameLosses += loserScore;
-  winner.lastActivity = set.date;
+
+  loser.setLosses += 1;
+  loser.gameWins += loserScore;
+  loser.gameLosses += winnerScore;
 
   if (winner.tournaments.includes(set.tournament_id) === false) {
     winner.tournaments.push(set.tournament_id);
     winner.attendance += 1;
 
-    if ((new Date() - set.date) > 1000 * 60 * 60 * 24 * 30 * 2) {
+    if ((new Date() - set.date) > (1000 * 60 * 60 * 24 * 30 * 2)) {
       winner.activeAttendance += 1;
     }
   }
-
   if (winner.sets.includes(set.id) === false) {
     winner.sets.push(set.id);
   }
-
-  loser.setLosses += 1;
-  loser.gameWins += loserScore;
-  loser.gameLosses += winnerScore;
-  loser.lastActivity = set.date;
 
   if (loser.tournaments.includes(set.tournament_id) === false) {
     loser.tournaments.push(set.tournament_id);
     loser.attendance += 1;
 
-    if ((new Date() - set.date) > 1000 * 60 * 60 * 24 * 30 * 2) {
+    if ((new Date() - set.date) > (1000 * 60 * 60 * 24 * 30 * 2)) {
       loser.activeAttendance += 1;
     }
   }
-
   if (loser.sets.includes(set.id) === false) {
     loser.sets.push(set.id);
   }
@@ -168,15 +165,12 @@ const editPlayersBasedOnSet = (players, set) => {
   loser.gameWinRate = loserGameWinRate;
   loser.gameWinRateHistory.push(loserGameWinRate);
 
-  console.log(winner.glickoProfile);
-  winner.glickoProfile.addResult(loser.glickoProfile, Outcome.Win);
-  loser.glickoProfile.addResult(winner.glickoProfile, Outcome.Lose);
-  winner.glickoProfile.updateRating();
-  loser.glickoProfile.updateRating();
-  console.log(winner.glickoProfile);
+  const match = new Match(winner.glickoProfile, loser.glickoProfile);
+  match.reportTeamAWon();
+  match.updatePlayerRatings();
 
-  winner.ratingHistory.push(winner.glickoProfile.rating);
-  loser.ratingHistory.push(loser.glickoProfile.rating);
+  winner.ratingHistory.push(Math.round(winner.glickoProfile.rating));
+  loser.ratingHistory.push(Math.round(loser.glickoProfile.rating));
 };
 
 const calculateWinRate = (wins, losses) => {
@@ -186,30 +180,62 @@ const calculateWinRate = (wins, losses) => {
 };
 
 const processPlayers = (players) => {
-  console.log('Processing players', players);
-  Object.keys(players).forEach((playerId) => {
-    // updatePlayerInDatabase(players[playerId]);
+  console.log('Processing players');
+  const promises = Object.keys(players).map((playerId) => {
+    return updatePlayerInDatabase(players[playerId]);
   });
+
+  Promise.all(promises)
+    .then(() => {
+      removePlayersWithNoData();
+    })
+    .catch((error) => {
+      throw error;
+    });
 };
 
 const updatePlayerInDatabase = (player) => {
-  console.log(`Updating rating, tournaments, sets, set_wins, set_losses, game_wins, game_losses, set_win_rate, game_win_rate, attendance, active_attendance, rating_history, set_win_rate_history, game_win_rate_history, and last_activity for ${player.name}`);
   client.query(`UPDATE players SET 
-    rating = ${player.glicko.rating},
-    tournaments = ${player.tournaments},
-    sets = ${player.sets},
-    set_wins = ${player.setWins},
-    set_losses = ${player.setLosses},
-    game_wins = ${player.gameWins},
-    game_losses = ${player.gameLosses},
-    set_win_rate = ${player.setWinRate},
-    game_win_rate = ${player.gameWinRate},
-    attendance = ${player.attendance},
-    active_attendance = ${player.activeAttendance},
-    rating_history = ${player.ratingHistory},
-    set_win_rate_history = ${player.setWinRateHistory},
-    game_win_rate_history = ${player.gameWinRateHistory}
-  WHERE name = ${player.name};`);
+    rating = $1,
+    tournaments = $2,
+    sets = $3,
+    set_wins = $4,
+    set_losses = $5,
+    game_wins = $6,
+    game_losses = $7,
+    set_win_rate = $8,
+    game_win_rate = $9,
+    attendance = $10,
+    active_attendance = $11,
+    rating_history = $12,
+    set_win_rate_history = $13,
+    game_win_rate_history = $14
+  WHERE name = $15;`,
+  [
+    Math.round(player.glickoProfile.rating),
+    player.tournaments,
+    player.sets,
+    player.setWins,
+    player.setLosses,
+    player.gameWins,
+    player.gameLosses,
+    player.setWinRate,
+    player.gameWinRate,
+    player.attendance,
+    player.activeAttendance,
+    player.ratingHistory,
+    player.setWinRateHistory,
+    player.gameWinRateHistory,
+    player.name
+  ]);
+};
+
+const removePlayersWithNoData = () => {
+  console.log('Removing players with no tournament data');
+  client.query('DELETE FROM players WHERE tournaments = $1;', [[]])
+    .catch((error) => {
+      throw error;
+    });
 };
 
 module.exports = recalculatePlayerStatistics;
