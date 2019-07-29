@@ -19,7 +19,7 @@ const recalculatePlayerStatistics = () => {
 
   Promise.all([promise1, promise2])
     .then(() => {
-      console.log('Processing sets', sets);
+      console.log('Processing sets');
       processSetsPlayed(players, sets);
     })
     .catch((error) => {
@@ -126,10 +126,13 @@ const editPlayersBasedOnSet = (players, set) => {
   loser.gameLosses += winnerScore;
 
   if (winner.tournaments.includes(set.tournament_id) === false) {
+    console.log('new tournament');
     winner.tournaments.push(set.tournament_id);
     winner.attendance += 1;
 
-    if ((new Date() - set.date) > (1000 * 60 * 60 * 24 * 30 * 2)) {
+    if ((new Date() - set.date) < (1000 * 60 * 60 * 24 * 30 * 2)) {
+      console.log(new Date() - set.date);
+      console.log(1000 * 60 * 60 * 24 * 30 * 2);
       winner.activeAttendance += 1;
     }
   }
@@ -141,7 +144,7 @@ const editPlayersBasedOnSet = (players, set) => {
     loser.tournaments.push(set.tournament_id);
     loser.attendance += 1;
 
-    if ((new Date() - set.date) > (1000 * 60 * 60 * 24 * 30 * 2)) {
+    if ((new Date() - set.date) < (1000 * 60 * 60 * 24 * 30 * 2)) {
       loser.activeAttendance += 1;
     }
   }

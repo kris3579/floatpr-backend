@@ -4,14 +4,18 @@ const client = require('../client');
 
 const getTournamentsFromDatabase = () => {
   const tournamentList = [];
+  const tournamentsObject = {};
 
   return queryDatabase()
     .then((data) => {
       data.rows.forEach((row) => {
         tournamentList.push(row);
+        tournamentsObject[row.id] = row;
       });
 
-      return tournamentList;
+      tournamentsObject.tournamentsArray = tournamentList;
+
+      return tournamentsObject;
     });
 };
 

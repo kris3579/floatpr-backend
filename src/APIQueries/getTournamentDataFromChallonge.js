@@ -9,6 +9,7 @@ const getTournamentDataFromChallonge = (tournament) => {
   superagent.get(`https://DigitalSpaceman:${process.env.CHALLONGE_API_KEY}@api.challonge.com/v1/tournaments/${tournament}.json`)
     .query('include_participants=1&include_matches=1')
     .then((response) => {
+      console.log(response.body.tournament.matches);
       processTournament(response.body.tournament);
     })
     .catch((error) => {

@@ -3,14 +3,14 @@
 const client = require('../client');
 
 const getPlayersFromDatabase = () => {
-  const playerObject = {};
   const playerList = [];
+  const playerObject = {};
 
   return queryDatabase()
     .then((data) => {
       data.rows.forEach((row) => {
-        playerObject[row.name] = row;
         playerList.push(row);
+        playerObject[row.name] = row;
       });
 
       playerObject.activeWashingtonPlayers = activeWashingtonPlayers(playerList);
@@ -23,7 +23,7 @@ const getPlayersFromDatabase = () => {
 };
 
 const queryDatabase = () => {
-  return client.query('SELECT * FROM players ORDER BY rating DESC;')
+  return client.query('SELECT * FROM players ORDER BY rating DESC, set_win_rate DESC, game_win_rate DESC;')
     .then((data) => {
       return data;
     })
@@ -36,17 +36,16 @@ const activeWashingtonPlayers = (playerList) => {
   const filteredForActivity = filterInactivePlayers(playerList);
 
   const filteredForWashingtonPlayers = filteredForActivity.filter((player) => {
-    player.state === 'WA';
+    return player.state === 'WA';
   });
-  const rankedList = rankPlayers(filteredForWashingtonPlayers);
-  return rankedList;
+
+  return filteredForWashingtonPlayers;
 };
 
 const allActivePlayers = (playerList) => {
   const filteredForActivity = filterInactivePlayers(playerList);
 
-  const rankedList = rankPlayers(filteredForActivity);
-  return rankedList;
+  return filteredForActivity;
 };
 
 const outOfStatePlayers = (playerList) => {
@@ -54,26 +53,15 @@ const outOfStatePlayers = (playerList) => {
     player.state !== 'WA';
   });
 
-  const rankedList = rankPlayers(filteredForOutOfStatePlayers);
-  return rankedList;
+  return filteredForOutOfStatePlayers;
 };
 
 const filterInactivePlayers = (playerList) => {
-  const filteredForActivePlayers =  playerList.filter((player) => {
-    player.activeAttendance > 1;
+  const filteredForActivePlayers = playerList.filter((player) => {
+    return player.active_attendance > 1;
   });
 
-  const rankedList = rankPlayers(filteredForActivePlayers);
-  return rankedList;
-};
-
-const rankPlayers = (playerList) => {
-  let rankCounter = 1;
-
-  return playerList.map((player) => {
-    player.rank = rankCounter;
-    rankCounter++;
-  });
+  return filteredForActivePlayers;
 };
 
 module.exports = getPlayersFromDatabase;

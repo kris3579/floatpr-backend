@@ -9,6 +9,7 @@ const getTournamentsFromDatabase = require('../databaseQuery/getTournamentsFromD
 const getSetsFromDatabase = require('../databaseQuery/getSetsFromDatabase');
 
 getDatabaseDataRouter.get('/getPlayers', (req, res) => {
+  console.log('Request for players in database');
   getPlayersFromDatabase()
     .then((data) => {
       res.send(data);
@@ -19,6 +20,7 @@ getDatabaseDataRouter.get('/getPlayers', (req, res) => {
 });
 
 getDatabaseDataRouter.get('/getTournaments', (req, res) => {
+  console.log('Request for tournaments in database');
   getTournamentsFromDatabase()
     .then((data) => {
       res.send(data);
@@ -29,6 +31,7 @@ getDatabaseDataRouter.get('/getTournaments', (req, res) => {
 });
 
 getDatabaseDataRouter.get('/getSets', (req, res) => {
+  console.log('Request for sets in database');
   getSetsFromDatabase()
     .then((data) => {
       res.send(data);

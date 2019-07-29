@@ -28,9 +28,6 @@ const combineResults = (playerOneName, playerTwoName) => {
 
 const updateWinnerNameInSets = (playerOneName, playerTwoName) => {
   return client.query(`UPDATE sets SET winner_name = $1 WHERE winner_name = $2;`, [playerOneName, playerTwoName])
-    .then((data) => {
-      console.log(data);
-    })
     .catch((error) => {
       throw error;
     });
@@ -38,9 +35,6 @@ const updateWinnerNameInSets = (playerOneName, playerTwoName) => {
 
 const updateLoserNameInSets = (playerOneName, playerTwoName) => {
   return client.query(`UPDATE sets SET loser_name = $1 WHERE loser_name = $2;`, [playerOneName, playerTwoName])
-    .then((data) => {
-      console.log(data);
-    })
     .catch((error) => {
       throw error;
     });
@@ -48,9 +42,6 @@ const updateLoserNameInSets = (playerOneName, playerTwoName) => {
 
 const deleteMergingPlayer = (playerTwoName) => {
   return client.query(`DELETE FROM players WHERE name = $1;`, [playerTwoName])
-    .then((data) => {
-      console.log(data);
-    })
     .catch((error) => {
       throw error;
     });

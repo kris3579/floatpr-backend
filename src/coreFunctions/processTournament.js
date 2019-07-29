@@ -26,6 +26,16 @@ const checkDatabaseForTournament = (tournament) => {
 
 const filterSetsForTournament = (tournament) => {
   console.log('Filtering sets for empty scores or DQ\'s');
+  const rounds = ['0', '0'];
+  tournament.matches.forEach((set) => {
+    if (set.match.round > rounds[0]) {
+      rounds[0] = set.match.round;
+    }
+    if (set.match.round < rounds[1]) {
+      rounds[1] = set.match.round;
+    }
+  });
+
   const filteredForEmptyScores = tournament.matches.filter((set) => {
     return set.match.scores_csv !== '';
   });
@@ -35,7 +45,7 @@ const filterSetsForTournament = (tournament) => {
   });
 
   tournament.matches = filteredForDQSets;
-
+  tournament.rounds = rounds;
   makePlayersObject(tournament);
 };
 
@@ -80,12 +90,47 @@ const storeSetInDatabase = (set, tournament) => {
   let winnerScore = 0;
   let loserScore = 0;
 
+  let round = '';
+
   if (tournament.players.hasOwnProperty(set.winner_id)) {
     winnerName = tournament.players[set.winner_id].name;
   }
   if (tournament.players.hasOwnProperty(set.loser_id)) {
     loserName = tournament.players[set.loser_id].name;
   }
+
+  switch(set.round) {
+  case(set.round === tournament.rounds[0]):
+    round = 'Grand Finals';
+    break;
+  case(set.round === tournament.rounds[0] - 1):
+    round = 'Winners Finals';
+    break;
+  case(set.round === tournament.rounds[0] - 2):
+    round = 'Winners Semifinals';
+    break;
+  case(set.round === tournament.rounds[0] - 3 && tournament.rounds[0] > 5):
+    round = 'Winners Quarterfinals';
+    break;
+  case(set.round === tournament.rounds[1]):
+    round = 'Losers Finals';
+    break;
+  case(set.round === tournament.rounds[1] - 1):
+    round = 'Losers Semifinals';
+    break;
+  case(set.round === tournament.rounds[1] -2):
+    round = 'Losers Quarterfinals';
+    break;
+  case(set.round > 0):
+    round = `Winners Round ${Math.abs(set.round)}`;
+    break;
+  case(set.round < 0):
+    round = `Losers Round ${Math.abs(set.round)}`;
+    break;
+  default:
+    break;
+  }
+  console.log(round);
 
   if (splitScores[0] > splitScores[2]) {
     winnerScore += splitScores[0];
@@ -97,8 +142,8 @@ const storeSetInDatabase = (set, tournament) => {
   }
 
   const queryConfig = {
-    text: 'INSERT INTO sets (id, winner_name, loser_name, tournament_id, tournament_name, winner_score, loser_score, date) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);',
-    values: [id, winnerName, loserName, tournamentId, tournamentName, winnerScore, loserScore, date],
+    text: 'INSERT INTO sets (id, round, winner_name, loser_name, tournament_id, tournament_name, winner_score, loser_score, date) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);',
+    values: [id, round, winnerName, loserName, tournamentId, tournamentName, winnerScore, loserScore, date],
   };
 
   console.log(`Storing set in database Winner: ${winnerName}, Loser: ${loserName}`);
@@ -120,7 +165,7 @@ const processTournamentPlayers = (tournament) => {
     });
 };
 
-const checkPlayersForNameAndStoreIfNotFound = (player, tournament) => {
+const checkPlayersForNameAndStoreIfNotFound = (player) => {
   console.log('Checking database for player');
   return client.query(`SELECT * FROM players WHERE players.name = $1;`, [player.name])
     .then((data) => {
@@ -156,13 +201,12 @@ const storeTournamentInDatabase = (tournament) => {
   });
   JSON.stringify(placements);
 
-  const sets = tournament.sets;
   const url = tournament.full_challonge_url;
   const date = tournament.completed_at;
 
   const queryConfig = {
-    text: 'INSERT INTO tournaments (id, name, placements, sets, url, date) VALUES ($1, $2, $3, $4, $5, $6);',
-    values: [id, name, placements, sets, url, date],
+    text: 'INSERT INTO tournaments (id, name, placements, url, date) VALUES ($1, $2, $3, $4, $5);',
+    values: [id, name, placements, url, date],
   };
 
   console.log('Storing tournament');
