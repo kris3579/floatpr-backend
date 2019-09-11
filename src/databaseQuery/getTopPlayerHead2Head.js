@@ -41,14 +41,10 @@ const getTopPlayerHead2Head = () => {
             }
 
             let matchupRanks = '';
-            console.log(winnerRank, loserRank);
-            console.log(typeof winnerRank, typeof loserRank);
             if (winnerRank < loserRank) {
-              console.log('here');
               matchupRanks = `${winnerRank}-${loserRank}`;
             }
             if (winnerRank > loserRank) {
-              console.log('here');
               matchupRanks = `${loserRank}-${winnerRank}`;
             }
 
@@ -67,15 +63,13 @@ const getTopPlayerHead2Head = () => {
             topPlayerHead2HeadObject[matchupRanks].gamePercentages = calculateWinRates(topPlayerHead2HeadObject[matchupRanks].gameScore[0], topPlayerHead2HeadObject[matchupRanks].gameScore[1]);
           });
 
-          console.log(topPlayerHead2HeadObject);
-
           return topPlayerHead2HeadObject;
         });
     });
 };
 
 const queryDatabaseForTopPlayers = () => {
-  return client.query(`SELECT * FROM players ORDER BY rating DESC LIMIT 15;`)
+  return client.query(`SELECT * FROM players WHERE state = 'WA' AND active_attendance > 1 ORDER BY rating DESC LIMIT 15;`)
     .then((data) => {
       return data.rows;
     })
