@@ -99,38 +99,35 @@ const storeSetInDatabase = (set, tournament) => {
     loserName = tournament.players[set.loser_id].name;
   }
 
-  switch(set.round) {
-  case(set.round === tournament.rounds[0]):
-    round = 'Grand Finals';
-    break;
-  case(set.round === tournament.rounds[0] - 1):
-    round = 'Winners Finals';
-    break;
-  case(set.round === tournament.rounds[0] - 2):
-    round = 'Winners Semifinals';
-    break;
-  case(set.round === tournament.rounds[0] - 3 && tournament.rounds[0] > 5):
-    round = 'Winners Quarterfinals';
-    break;
-  case(set.round === tournament.rounds[1]):
-    round = 'Losers Finals';
-    break;
-  case(set.round === tournament.rounds[1] - 1):
-    round = 'Losers Semifinals';
-    break;
-  case(set.round === tournament.rounds[1] -2):
-    round = 'Losers Quarterfinals';
-    break;
-  case(set.round > 0):
+  if (set.round > 0) {
     round = `Winners Round ${Math.abs(set.round)}`;
-    break;
-  case(set.round < 0):
-    round = `Losers Round ${Math.abs(set.round)}`;
-    break;
-  default:
-    break;
   }
-  console.log(round);
+  if (set.round < 0) {
+    round = `Losers Round ${Math.abs(set.round)}`;
+  }
+  if (set.round === tournament.rounds[1] + 2) {
+    round = 'Losers Quarterfinals';
+  }
+  if (set.round === tournament.rounds[1] + 1) {
+    round = 'Losers Semifinals';
+  }
+  if (set.round === tournament.rounds[1]) {
+    round = 'Losers Finals';
+  }
+  if (set.round === tournament.rounds[0] - 3 && tournament.rounds[0] > 5) {
+    round = 'Winners Quarterfinals';
+  }
+  if (set.round === tournament.rounds[0] - 2) {
+    round = 'Winners Semifinals';
+  }
+  if (set.round === tournament.rounds[0] - 1) {
+    round = 'Winners Finals';
+  }
+  if (set.round === tournament.rounds[0]) {
+    round = 'Grand Finals';
+  }
+
+  console.log(set.round, tournament.rounds[1] - 1, round);
 
   if (splitScores[0] > splitScores[2]) {
     winnerScore += splitScores[0];
