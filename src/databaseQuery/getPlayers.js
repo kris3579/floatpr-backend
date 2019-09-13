@@ -14,6 +14,7 @@ const getPlayersFromDatabase = () => {
       });
 
       playerObject.activeWashingtonPlayers = activeWashingtonPlayers(playerList);
+      playerObject.washingtonPlayers = washingtonPlayers(playerList);
       playerObject.allPlayers = playerList;
 
       return playerObject;
@@ -33,7 +34,13 @@ const queryDatabase = () => {
 const activeWashingtonPlayers = (playerList) => {
   const filteredForActivity = filterInactivePlayers(playerList);
 
-  const filteredForWashingtonPlayers = filteredForActivity.filter((player) => {
+  const filteredForWashingtonPlayers = washingtonPlayers(filteredForActivity);
+
+  return filteredForWashingtonPlayers;
+};
+
+const washingtonPlayers = (playerList) => {
+  const filteredForWashingtonPlayers = playerList.filter((player) => {
     return player.state === 'WA';
   });
 
