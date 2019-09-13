@@ -175,7 +175,8 @@ const editPlayersBasedOnSet = (players, set) => {
 
 const calculateWinRate = (wins, losses) => {
   console.log('Caluclating win rate');
-  const newWinRate = Math.round(((wins / (wins + losses)) * 100) * 100) / 100;
+  const newWinRate = ((wins / (wins + losses)) * 100).toFixed(2);
+
   return newWinRate;
 };
 
