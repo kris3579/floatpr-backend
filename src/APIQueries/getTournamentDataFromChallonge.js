@@ -2,7 +2,7 @@
 
 const superagent = require('superagent');
 
-const processTournament = require('../coreFunctions/processTournament');
+const processTournament = require('../coreFunctions/processChallongeTournament');
 
 const getTournamentDataFromChallonge = (tournament) => {
   console.log('Querying Challonge for tournament data');
