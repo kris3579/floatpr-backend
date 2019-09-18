@@ -55,9 +55,23 @@ const queryDatabase = (player1, player2) => {
 };
 
 const calculateWinRates = (player1Score, player2Score) => {
+  let player1WinRate = ((player1Score / (player1Score + player2Score)) * 100);
+  let player2WinRate = ((player2Score / (player2Score + player1Score)) * 100);
 
-  const player1WinRate = `${(((player1Score / (player1Score + player2Score)).toFixed(2)) * 100)}%`;
-  const player2WinRate = `${(((player2Score / (player2Score + player1Score)).toFixed(2)) * 100)}%`;
+  if (Number.isInteger(player1WinRate) === false) {
+    player1WinRate = `${player1WinRate.toFixed(2)}%`;
+  }
+  if (Number.isInteger(player2WinRate) === false) {
+    player2WinRate = `${player2WinRate.toFixed(2)}%`;
+  }
+  if (Number.isInteger(player1WinRate) === true) {
+    player1WinRate = `${player1WinRate}%`;
+  }
+  if (Number.isInteger(player2WinRate) === true) {
+    player2WinRate = `${player2WinRate}%`;
+  }
+
+  console.log(player1WinRate, player2WinRate);
 
   return [player1WinRate, player2WinRate];
 };

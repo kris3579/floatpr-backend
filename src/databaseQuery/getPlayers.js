@@ -14,7 +14,7 @@ const getPlayersFromDatabase = () => {
       });
 
       playerObject.activeWashingtonPlayers = activeWashingtonPlayers(playerList);
-      playerObject.allActivePlayers = allActivePlayers(playerList);
+      playerObject.washingtonPlayers = washingtonPlayers(playerList);
       playerObject.allPlayers = playerList;
 
       return playerObject;
@@ -34,21 +34,25 @@ const queryDatabase = () => {
 const activeWashingtonPlayers = (playerList) => {
   const filteredForActivity = filterInactivePlayers(playerList);
 
-  const filteredForWashingtonPlayers = filteredForActivity.filter((player) => {
+  const filteredForWashingtonPlayers = washingtonPlayers(filteredForActivity);
+
+  return filteredForWashingtonPlayers;
+};
+
+const washingtonPlayers = (playerList) => {
+  const filteredForWashingtonPlayers = playerList.filter((player) => {
     return player.state === 'WA';
   });
 
   return filteredForWashingtonPlayers;
 };
 
-const allActivePlayers = (playerList) => {
-  const filteredForActivity = filterInactivePlayers(playerList);
-
-  return filteredForActivity;
-};
-
 const filterInactivePlayers = (playerList) => {
-  const filteredForActivePlayers = playerList.filter((player) => {
+  const filteredForEnoughAttendance = playerList.filter((player) => {
+    return player.attendance > 4;
+  });
+
+  const filteredForActivePlayers = filteredForEnoughAttendance.filter((player) => {
     return player.active_attendance > 1;
   });
 
