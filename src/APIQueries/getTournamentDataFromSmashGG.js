@@ -9,10 +9,13 @@ smashGG.initialize(process.env.SMASHGG_API_KEY);
 
 const getTournamentDataFromSmashGG = async (tournament) => {
   console.log('Querying Smash.gg for tournament data');
-  // const tournamentObject = await Tournament.getTournament(tournament);
+  const tournamentObject = await Tournament.getTournament(tournament);
+  
   const events = await Tournament.getEvents();
   console.log(events);
+
   // const singles = filter event array ?
+
   // const entrants = await singles.getEntrants();
   // const sets = await singles.getSets({options: {
   //   filterDQs: true,
