@@ -2,6 +2,16 @@
 
 const client = require('../client');
 
+const queryDatabase = () => {
+  return client.query('SELECT * FROM tournaments ORDER BY date DESC;')
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      throw error;
+    });
+};
+
 const getTournamentsFromDatabase = () => {
   const tournamentList = [];
   const tournamentsObject = {};
@@ -16,16 +26,6 @@ const getTournamentsFromDatabase = () => {
       tournamentsObject.tournamentsArray = tournamentList;
 
       return tournamentsObject;
-    });
-};
-
-const queryDatabase = () => {
-  return client.query('SELECT * FROM tournaments ORDER BY date DESC;')
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      throw error;
     });
 };
 

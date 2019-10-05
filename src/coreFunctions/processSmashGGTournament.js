@@ -7,21 +7,50 @@ const recalculatePlayerStatistics = require('./recalculatePlayerStatistics');
 
 smashGG.initialize(process.env.SMASHGG_API_KEY);
 
-const processSmashGGTournament = (tournamentData) => {
-  console.log('Processing');
-  checkDatabaseForTournament(tournamentData);
+const storeTournamentInDatabase = (tournamentData) => {
+  const { id, name } = tournamentData.tournament;
+
+  const placements = {};
+
+  tournamentData.standings.forEach((player) => {
+    if (Object.hasOwnProperty.call(placements, player.placement)) {
+      placements[player.placement].push(player.entrant.name);
+    } else {
+      placements[player.placement] = player.entrant.name;
+    }
+  });
+
+  JSON.stringify(placements);
+
+  const { url, date } = tournamentData.tournament;
+
+  const queryConfig = {
+    text: 'INSERT INTO tournaments (id, name, placements, url, date) VALUES ($1, $2, $3, $4, $5);',
+    values: [id, name, placements, url, date],
+  };
+
+  console.log('Storing tournament');
+  client.query(queryConfig);
+
+  console.log('Recalculating player statistics');
+  recalculatePlayerStatistics();
 };
 
-const checkDatabaseForTournament = (tournamentData) => {
-  console.log('Checking database for tournament');
-  return client.query(`SELECT name FROM tournaments WHERE id = ${tournamentData.tournament.id};`)
+const checkPlayersForNameAndSToreIfNotFound = (player) => {
+  console.log('Checking database for the player');
+  return client.query('SELECT * FROM players WHERE player.name = $1', [player.tag])
     .then((data) => {
       if (data.rowCount > 0) {
-        console.log('Tournament found in database: Not stored');
+        console.log('Player found in database: Not stored', player.tag);
       }
       if (data.rowCount === 0) {
-        console.log('Process tournament sets');
-        // processTournamentSets(tournamentData);
+        const queryConfig = {
+          text: 'INSERT INTO players (id, name, rating, mains, state, tournaments, sets, set_wins, set_losses, game_wins, game_losses, set_win_rate, game_win_rate, attendance, active_attendance, rating_history, set_win_rate_history, game_win_rate_history) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18);',
+          values: [player.id, player.name, 1800, ['unknown'], 'WA', [], [], 0, 0, 0, 0, 100, 100, 0, 0, [], [], []],
+        };
+
+        console.log('Storing player in database', player.name, player.id);
+        client.query(queryConfig);
       }
     })
     .catch((error) => {
@@ -29,15 +58,14 @@ const checkDatabaseForTournament = (tournamentData) => {
     });
 };
 
-const processTournamentSets = (tournamentData) => {
-  console.log('Retreving sets from tournament');
-  const promises = tournamentData.sets.map((set) => {
-    return storeSetInDatabase(set, tournamentData.tournament);
+const processTournamentEntrants = (tournamentData) => {
+  const promises = tournamentData.entrants.map((entrant) => {
+    return checkPlayersForNameAndSToreIfNotFound(entrant);
   });
 
   Promise.all(promises)
     .then(() => {
-      processTournamentEntrants(tournamentData);
+      storeTournamentInDatabase(tournamentData);
     })
     .catch((error) => {
       throw error;
@@ -45,7 +73,7 @@ const processTournamentSets = (tournamentData) => {
 };
 
 const storeSetInDatabase = (set, tournamentData) => {
-  const id = set.id;
+  const { id } = set;
   const tournamentid = tournamentData.tournament.id;
   const tournamentName = tournamentData.tournament.name;
   const date = set.completedAt;
@@ -71,76 +99,58 @@ const storeSetInDatabase = (set, tournamentData) => {
 
   const queryConfig = {
     text: 'INSERT INTO sets (id, round, winner_name, loser_name, tournament_id, tournament_name, winner_score, loser_score, date) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);',
-    values: [id, round, winnerName, loserName, tournamentid, tournamentName, winnerScore, loserScore, date],
+    values: [
+      id,
+      round,
+      winnerName,
+      loserName,
+      tournamentid,
+      tournamentName,
+      winnerScore,
+      loserScore,
+      date,
+    ],
   };
 
   console.log(`Storing set in database Winner: ${winnerName}, Loser: ${loserName}`);
   client.query(queryConfig);
 };
 
-const processTournamentEntrants = (tournamentData) => {
-  const promises = tournamentData.entrants.map((entrant) => {
-    return checkPlayersForNameAndSToreIfNotFound(entrant);
+const processTournamentSets = (tournamentData) => {
+  console.log('Retreving sets from tournament');
+  const promises = tournamentData.sets.map((set) => {
+    return storeSetInDatabase(set, tournamentData.tournament);
   });
 
   Promise.all(promises)
     .then(() => {
-      storeTournamentInDatabase(tournamentData);
+      processTournamentEntrants(tournamentData);
     })
     .catch((error) => {
       throw error;
     });
 };
 
-const checkPlayersForNameAndSToreIfNotFound = (player) => {
-  console.log('Checking database for the player');
-  return client.query(`SELECT * FROM players WHERE player.name = $1`, [player.tag])
+const checkDatabaseForTournament = (tournamentData) => {
+  console.log('Checking database for tournament');
+  return client.query(`SELECT name FROM tournaments WHERE id = ${tournamentData.tournament.id};`)
     .then((data) => {
       if (data.rowCount > 0) {
-        console.log('Player found in database: Not stored', player.tag);
+        console.log('Tournament found in database: Not stored');
       }
       if (data.rowCount === 0) {
-        const queryConfig = {
-          text: 'INSERT INTO players (id, name, rating, mains, state, tournaments, sets, set_wins, set_losses, game_wins, game_losses, set_win_rate, game_win_rate, attendance, active_attendance, rating_history, set_win_rate_history, game_win_rate_history) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18);',
-          values: [player.id, player.name, 1800, ['unknown'], 'WA', [], [], 0, 0, 0, 0, 100, 100, 0, 0, [], [], []],
-        };
-
-        console.log('Storing player in database', player.name, player.id);
-        client.query(queryConfig);
+        console.log('Process tournament sets');
+        // processTournamentSets(tournamentData);
       }
     })
-    .catch((error) =>{
+    .catch((error) => {
       throw error;
     });
 };
 
-const storeTournamentInDatabase = (tournamentData) => {
-  const id = tournamentData.tournament.id;
-  const name = tournamentData.tournament.name;
-
-  const placements = {};
-  tournamentData.standings.forEach((player) => {
-    if (placements.hasOwnProperty(player.placement)) {
-      placements[player.placement].push(player.entrant.name);
-    } else {
-      placements[player.placement] = player.entrant.name;
-    }
-  });
-  JSON.stringify(placements);
-
-  const url = tournamentData.tournament.slug;
-  const date = tournamentData.tournament.endTime;
-
-  const queryConfig = {
-    text: 'INSERT INTO tournaments (id, name, placements, url, date) VALUES ($1, $2, $3, $4, $5);',
-    values: [id, name, placements, url, date],
-  };
-
-  console.log('Storing tournament');
-  client.query(queryConfig);
-
-  console.log('Recalculating player statistics');
-  recalculatePlayerStatistics();
+const processSmashGGTournament = (tournamentData) => {
+  console.log('Processing');
+  checkDatabaseForTournament(tournamentData);
 };
 
 module.exports = processSmashGGTournament;

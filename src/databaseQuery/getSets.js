@@ -2,6 +2,16 @@
 
 const client = require('../client');
 
+const queryDatabase = () => {
+  return client.query('SELECT * FROM sets ORDER BY date DESC;')
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      throw error;
+    });
+};
+
 const getSetsFromDatabase = () => {
   const setsList = [];
 
@@ -12,17 +22,6 @@ const getSetsFromDatabase = () => {
       });
 
       return setsList;
-    });
-
-};
-
-const queryDatabase = () => {
-  return client.query('SELECT * FROM sets ORDER BY date DESC;')
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      throw error;
     });
 };
 
