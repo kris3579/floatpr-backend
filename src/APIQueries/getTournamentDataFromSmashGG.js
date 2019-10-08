@@ -12,7 +12,6 @@ const getTournamentDataFromSmashGG = (tournament, event) => {
   console.log('Querying Smash.gg for tournament data');
 
   const tournamentData = {};
-
   
   const tournamentPromise = new Promise((resolve, reject) => {
     Tournament.get(tournament)
@@ -27,17 +26,7 @@ const getTournamentDataFromSmashGG = (tournament, event) => {
 
   Event.get(tournament, event)
     .then((eventObject) => {
-      console.log(eventObject);
-      const entrantsPromise = new Promise((resolve, reject) => {
-        eventObject.getEntrants()
-          .then((entrants) => {
-            tournamentData.entrants = entrants;
-            resolve();
-          })
-          .catch((error) => {
-            reject(error);
-          });
-      });
+      tournamentData.eventSlug = eventObject.slug;
 
       const setsPromise = new Promise((resolve, reject) => {
         eventObject.getSets({
@@ -64,11 +53,11 @@ const getTournamentDataFromSmashGG = (tournament, event) => {
           });
       });
 
-      const promiseArray = [tournamentPromise, entrantsPromise, setsPromise, standingsPromise];
+      const promiseArray = [tournamentPromise, setsPromise, standingsPromise];
     
       Promise.all(promiseArray)
         .then(() => {
-          console.log(tournamentData);
+          processSmashGGTournament(tournamentData);
         })
         .catch((error) => {
           throw error;
@@ -77,8 +66,6 @@ const getTournamentDataFromSmashGG = (tournament, event) => {
     .catch((error) => {
       throw error;
     });
-
-  // processSmashGGTournament(tournamentData);
 };
 
 module.exports = getTournamentDataFromSmashGG;

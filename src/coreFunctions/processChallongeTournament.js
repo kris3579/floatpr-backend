@@ -7,6 +7,7 @@ const storeTournamentInDatabase = (tournament) => {
   const { id, name } = tournament;
 
   const placements = {};
+  
   Object.keys(tournament.players).forEach((player) => {
     if (Object.hasOwnProperty.call(placements, tournament.players[player].placement)) {
       placements[tournament.players[player].placement].push(tournament.players[player].name);
@@ -116,8 +117,6 @@ const storeSetInDatabase = (set, tournament) => {
     round = 'Grand Finals';
   }
 
-  console.log(set.round, tournament.rounds[1] - 1, round);
-
   if (splitScores[0] > splitScores[2]) {
     winnerScore += splitScores[0];
     loserScore += splitScores[2];
@@ -129,7 +128,8 @@ const storeSetInDatabase = (set, tournament) => {
 
   const queryConfig = {
     text: 'INSERT INTO sets (id, round, winner_name, loser_name, tournament_id, tournament_name, winner_score, loser_score, date) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);',
-    values: [id,
+    values: [
+      id,
       round,
       winnerName,
       loserName,
