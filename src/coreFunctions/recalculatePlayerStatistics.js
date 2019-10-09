@@ -65,12 +65,40 @@ const processPlayers = (players) => {
 
 const calculateWinRate = (wins, losses) => {
   if (wins === 0 && losses === 0) {
-    return 100.00;
+    return 0.00;
   }
 
   const newWinRate = ((wins / (wins + losses)) * 100).toFixed(2);
   
   return newWinRate;
+};
+
+const historiesPush = (player) => {
+  const setWinRate = calculateWinRate(player.setWins, player.setLosses);
+  const gameWinRate = calculateWinRate(player.gameWins, player.gameLosses);
+
+  player.setWinRate = setWinRate;
+  player.setWinRateHistory.push(setWinRate);
+  player.gameWinRate = gameWinRate;
+  player.gameWinRateHistory.push(gameWinRate);
+    
+  player.ratingHistory.push(Math.round(player.glickoProfile.rating));
+};
+
+const finalHistoryPush = (players) => {
+  const promises = Object.keys(players).map((player) => {
+    const currentPlayer = players[player];
+    
+    return historiesPush(currentPlayer);
+  });
+  
+  Promise.all(promises)
+    .then(() => {
+      processPlayers(players);
+    })
+    .catch((error) => {
+      throw error;
+    });
 };
 
 const editPlayersBasedOnSet = (players, set) => {
@@ -90,21 +118,11 @@ const editPlayersBasedOnSet = (players, set) => {
       winner.activeAttendance += 1;
     }
     
-    const winnerSetWinRate = calculateWinRate(winner.setWins, winner.setLosses);
-    const winnerGameWinRate = calculateWinRate(winner.gameWins, winner.gameLosses);
-
-    winner.setWinRate = winnerSetWinRate;
-    winner.setWinRateHistory.push(winnerSetWinRate);
-    winner.gameWinRate = winnerGameWinRate;
-    winner.gameWinRateHistory.push(winnerGameWinRate);
-    
-    winner.ratingHistory.push(Math.round(winner.glickoProfile.rating));
+    historiesPush(winner);
   }
   
   if (winner.sets.includes(set.id) === false) {
     winner.sets.push(set.id);
-  } else {
-    console.log('problem?');
   }
   
   if (loser.tournaments.includes(set.tournament_id) === false) {
@@ -116,23 +134,13 @@ const editPlayersBasedOnSet = (players, set) => {
       loser.activeAttendance += 1;
     }
     
-    const loserSetWinRate = calculateWinRate(loser.setWins, loser.setLosses);
-    const loserGameWinRate = calculateWinRate(loser.gameWins, loser.gameLosses);
-    
-    loser.setWinRate = loserSetWinRate;
-    loser.setWinRateHistory.push(loserSetWinRate);
-    loser.gameWinRate = loserGameWinRate;
-    loser.gameWinRateHistory.push(loserGameWinRate);
-    
-    loser.ratingHistory.push(Math.round(loser.glickoProfile.rating));
+    historiesPush(loser);
   }
   
   if (loser.sets.includes(set.id) === false) {
     loser.sets.push(set.id);
-  } else {
-    console.log('problem?');
   }
-  
+
   const winnerScore = set.winner_score;
   const loserScore = set.loser_score;
   
@@ -156,7 +164,7 @@ const processSetsPlayed = (players, sets) => {
   
   Promise.all(promises)
     .then(() => {
-      processPlayers(players);
+      finalHistoryPush(players);
     })
     .catch((error) => {
       throw error;
