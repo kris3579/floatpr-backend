@@ -43,7 +43,7 @@ const calculateWinRates = (player1Score, player2Score) => {
 };
 
 const getTopPlayerHead2Head = () => {
-  const topPlayerHead2HeadObject = {};
+  const topPlayerH2H = {};
   const playersArray = [];
 
   return queryDatabaseForTopPlayers()
@@ -53,15 +53,16 @@ const getTopPlayerHead2Head = () => {
         playersArray.push(player);
       });
 
-      topPlayerHead2HeadObject.rankingOrder = playersArray;
+      topPlayerH2H.rankingOrder = playersArray;
 
       const matchupsArray = ['1-2', '1-2', '1-3', '1-4', '1-5', '1-6', '1-7', '1-8', '1-9', '1-10', '2-3', '2-4', '2-5', '2-6', '2-7', '2-8', '2-9', '2-10', '3-4', '3-5', '3-6', '3-7', '3-8', '3-9', '3-10', '4-5', '4-6', '4-7', '4-8', '4-9', '4-10', '5-6', '5-7', '5-8', '5-9', '5-10', '6-7', '6-8', '6-9', '6-10', '7-8', '7-9', '7-10', '8-9', '8-10', '9-10'];
+      
       matchupsArray.forEach((matchup) => {
-        topPlayerHead2HeadObject[matchup] = {
+        topPlayerH2H[matchup] = {
           setScore: [0, 0],
-          setPercentages: ['N/A', 'N/A'],
+          setAvg: ['N/A', 'N/A'],
           gameScore: [0, 0],
-          gamePercentages: ['N/A', 'N/A'],
+          gameAvg: ['N/A', 'N/A'],
         };
       });
 
@@ -81,29 +82,32 @@ const getTopPlayerHead2Head = () => {
             }
 
             let matchupRanks = '';
-            if (winnerRank < loserRank) {
-              matchupRanks = `${winnerRank}-${loserRank}`;
-            }
+            
             if (winnerRank > loserRank) {
               matchupRanks = `${loserRank}-${winnerRank}`;
             }
+            if (winnerRank < loserRank) {
+              matchupRanks = `${winnerRank}-${loserRank}`;
+            }
+
+            const matchup = topPlayerH2H[matchupRanks];
 
             if (winnerRank > loserRank) {
-              topPlayerHead2HeadObject[matchupRanks].setScore[0] += 1;
-              topPlayerHead2HeadObject[matchupRanks].gameScore[0] += set.winner_score;
-              topPlayerHead2HeadObject[matchupRanks].gameScore[1] += set.loser_score;
+              matchup.setScore[0] += 1;
+              matchup.gameScore[0] += set.winner_score;
+              matchup.gameScore[1] += set.loser_score;
             }
-            if (loserRank > winnerRank) {
-              topPlayerHead2HeadObject[matchupRanks].setScore[1] += 1;
-              topPlayerHead2HeadObject[matchupRanks].gameScore[0] += set.loser_score;
-              topPlayerHead2HeadObject[matchupRanks].gameScore[1] += set.winner_score;
+            if (winnerRank < loserRank) {
+              matchup.setScore[1] += 1;
+              matchup.gameScore[0] += set.loser_score;
+              matchup.gameScore[1] += set.winner_score;
             }
 
-            topPlayerHead2HeadObject[matchupRanks].setPercentages = calculateWinRates(topPlayerHead2HeadObject[matchupRanks].setScore[0], topPlayerHead2HeadObject[matchupRanks].setScore[1]);
-            topPlayerHead2HeadObject[matchupRanks].gamePercentages = calculateWinRates(topPlayerHead2HeadObject[matchupRanks].gameScore[0], topPlayerHead2HeadObject[matchupRanks].gameScore[1]);
+            matchup.setAvg = calculateWinRates(matchup.setScore[0], matchup.setScore[1]);
+            matchup.gameAvg = calculateWinRates(matchup.gameScore[0], matchup.gameScore[1]);
           });
 
-          return topPlayerHead2HeadObject;
+          return topPlayerH2H;
         });
     });
 };

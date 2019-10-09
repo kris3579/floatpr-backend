@@ -29,50 +29,48 @@ const calculateWinRates = (player1Score, player2Score) => {
     player2WinRate = `${player2WinRate}%`;
   }
 
-  console.log(player1WinRate, player2WinRate);
-
   return [player1WinRate, player2WinRate];
 };
 
 const getPairHead2Head = (player1, player2) => {
-  const head2HeadObject = {
+  const h2HObject = {
     matchupName: `${player1} vs ${player2}`,
     player1,
     player2,
     setsPlayed: 0,
     setsArray: [],
     setScore: [0, 0],
-    setPercentages: ['100%', '100%'],
+    setAvg: ['100%', '100%'],
     gamesPlayed: 0,
     gameScore: [0, 0],
-    gamePercentages: ['100%', '100%'],
+    gameAvg: ['100%', '100%'],
   };
 
   return queryDatabase(player1, player2)
     .then((sets) => {
       sets.rows.forEach((set) => {
-        head2HeadObject.setsPlayed += 1;
-        head2HeadObject.gamesPlayed += set.winner_score;
-        head2HeadObject.gamesPlayed += set.loser_score;
+        h2HObject.setsPlayed += 1;
+        h2HObject.gamesPlayed += set.winner_score;
+        h2HObject.gamesPlayed += set.loser_score;
 
-        head2HeadObject.setsArray.push(set);
+        h2HObject.setsArray.push(set);
 
         if (set.winner_name === player1) {
-          head2HeadObject.setScore[0] += 1;
-          head2HeadObject.gameScore[0] += set.winner_score;
-          head2HeadObject.gameScore[1] += set.loser_score;
+          h2HObject.setScore[0] += 1;
+          h2HObject.gameScore[0] += set.winner_score;
+          h2HObject.gameScore[1] += set.loser_score;
         }
         if (set.winner_name === player2) {
-          head2HeadObject.setScore[1] += 1;
-          head2HeadObject.gameScore[0] += set.loser_score;
-          head2HeadObject.gameScore[1] += set.winner_score;
+          h2HObject.setScore[1] += 1;
+          h2HObject.gameScore[0] += set.loser_score;
+          h2HObject.gameScore[1] += set.winner_score;
         }
 
-        head2HeadObject.setPercentages = calculateWinRates(head2HeadObject.setScore[0], head2HeadObject.setScore[1]);
-        head2HeadObject.gamePercentages = calculateWinRates(head2HeadObject.gameScore[0], head2HeadObject.gameScore[1]);
+        h2HObject.setAvg = calculateWinRates(h2HObject.setScore[0], h2HObject.setScore[1]);
+        h2HObject.gameAvg = calculateWinRates(h2HObject.gameScore[0], h2HObject.gameScore[1]);
       });
 
-      return head2HeadObject;
+      return h2HObject;
     });
 };
 

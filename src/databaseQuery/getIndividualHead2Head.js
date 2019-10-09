@@ -65,47 +65,49 @@ const getIndividualHead2Head = (player) => {
       sets.rows.forEach((set) => {
         if (set.winner_name === player) {
           const matchupName = `${player} vs ${set.loser_name}`;
+          let matchup = allMatchups[matchupName];
 
           if (Object.hasOwnProperty.call(allMatchups, matchupName) === false) {
-            allMatchups[matchupName] = {
+            matchup = {
               name: matchupName,
               opponent: set.loser_name,
               setsPlayed: 1,
               setScore: [1, 0],
-              setPercentages: ['100%', '0%'],
+              setAvg: ['100%', '0%'],
               gameScore: [set.winner_score, set.loser_score],
-              gamePercentages: calculateWinRates(set.winner_score, set.loser_score),
+              gameAvg: calculateWinRates(set.winner_score, set.loser_score),
             };
           } else {
-            allMatchups[matchupName].setsPlayed += 1;
-            allMatchups[matchupName].setScore[0] += 1;
-            allMatchups[matchupName].setPercentages = calculateWinRates(allMatchups[matchupName].setScore[0], allMatchups[matchupName].setScore[1]);
-            allMatchups[matchupName].gameScore[0] += set.winner_score;
-            allMatchups[matchupName].gameScore[1] += set.loser_score;
-            allMatchups[matchupName].gamePercentages = calculateWinRates(allMatchups[matchupName].gameScore[0], allMatchups[matchupName].gameScore[1]);
+            matchup.setsPlayed += 1;
+            matchup.setScore[0] += 1;
+            matchup.setAvg = calculateWinRates(matchup.setScore[0], matchup.setScore[1]);
+            matchup.gameScore[0] += set.winner_score;
+            matchup.gameScore[1] += set.loser_score;
+            matchup.gameAvg = calculateWinRates(matchup.gameScore[0], matchup.gameScore[1]);
           }
         }
 
         if (set.loser_name === player) {
           const matchupName = `${player} vs ${set.winner_name}`;
+          let matchup = allMatchups[matchupName];
 
           if (Object.hasOwnProperty.call(allMatchups, matchupName) === false) {
-            allMatchups[matchupName] = {
+            matchup = {
               name: matchupName,
               opponent: set.winner_name,
               setsPlayed: 1,
               setScore: [0, 1],
-              setPercentages: ['0%', '100%'],
+              setAvg: ['0%', '100%'],
               gameScore: [set.loser_score, set.winner_score],
-              gamePercentages: calculateWinRates(set.loser_score, set.winner_score),
+              gameAvg: calculateWinRates(set.loser_score, set.winner_score),
             };
           } else {
-            allMatchups[matchupName].setsPlayed += 1;
-            allMatchups[matchupName].setScore[1] += 1;
-            allMatchups[matchupName].setPercentages = calculateWinRates(allMatchups[matchupName].setScore[0], allMatchups[matchupName].setScore[1]);
-            allMatchups[matchupName].gameScore[0] += set.loser_score;
-            allMatchups[matchupName].gameScore[1] += set.winner_score;
-            allMatchups[matchupName].gamePercentages = calculateWinRates(allMatchups[matchupName].gameScore[0], allMatchups[matchupName].gameScore[1]);
+            matchup.setsPlayed += 1;
+            matchup.setScore[1] += 1;
+            matchup.setAvg = calculateWinRates(matchup.setScore[0], matchup.setScore[1]);
+            matchup.gameScore[0] += set.loser_score;
+            matchup.gameScore[1] += set.winner_score;
+            matchup.gameAvg = calculateWinRates(matchup.gameScore[0], matchup.gameScore[1]);
           }
         }
       });
