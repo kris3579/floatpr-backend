@@ -66,8 +66,8 @@ const getIndividualHead2Head = (player) => {
         if (set.winner_name === player) {
           const matchupName = `${player} vs ${set.loser_name}`;
           let matchup = allMatchups[matchupName];
-
-          if (Object.hasOwnProperty.call(allMatchups, matchupName) === false) {
+          
+          if (!matchup) {
             matchup = {
               name: matchupName,
               opponent: set.loser_name,
@@ -77,6 +77,8 @@ const getIndividualHead2Head = (player) => {
               gameScore: [set.winner_score, set.loser_score],
               gameAvg: calculateWinRates(set.winner_score, set.loser_score),
             };
+
+            allMatchups[matchupName] = matchup;
           } else {
             matchup.setsPlayed += 1;
             matchup.setScore[0] += 1;
@@ -90,8 +92,8 @@ const getIndividualHead2Head = (player) => {
         if (set.loser_name === player) {
           const matchupName = `${player} vs ${set.winner_name}`;
           let matchup = allMatchups[matchupName];
-
-          if (Object.hasOwnProperty.call(allMatchups, matchupName) === false) {
+          
+          if (!matchup) {
             matchup = {
               name: matchupName,
               opponent: set.winner_name,
@@ -101,6 +103,8 @@ const getIndividualHead2Head = (player) => {
               gameScore: [set.loser_score, set.winner_score],
               gameAvg: calculateWinRates(set.loser_score, set.winner_score),
             };
+            
+            allMatchups[matchupName] = matchup;
           } else {
             matchup.setsPlayed += 1;
             matchup.setScore[1] += 1;
@@ -113,7 +117,6 @@ const getIndividualHead2Head = (player) => {
       });
 
       const sortedMatchups = sortBySetsPlayed(allMatchups);
-
       return sortedMatchups;
     });
 };

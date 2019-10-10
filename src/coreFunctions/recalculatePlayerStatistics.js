@@ -64,7 +64,7 @@ const processPlayers = (players) => {
 };
 
 const calculateWinRate = (wins, losses) => {
-  if (wins === 0 && losses === 0) {
+  if (wins === 0) {
     return 0.00;
   }
 
