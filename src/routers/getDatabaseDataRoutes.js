@@ -47,8 +47,8 @@ getDatabaseDataRouter.get('/getTournaments', (req, res) => {
 
 getDatabaseDataRouter.get('/getPairHead2Head/:player1/:player2', (req, res) => {
   console.log('Request for head2head between two players');
-  const player1 = req.params.player1;
-  const player2 = req.params.player2;
+  const { player1 } = req.params;
+  const { player2 } = req.params;
   getPairHead2Head(player1, player2)
     .then((data) => {
       res.send(data);
@@ -60,7 +60,7 @@ getDatabaseDataRouter.get('/getPairHead2Head/:player1/:player2', (req, res) => {
 
 getDatabaseDataRouter.get('/getIndividualHead2Head/:player', (req, res) => {
   console.log('Request for head2head for a single player');
-  const player = req.params.player;
+  const { player } = req.params;
   getIndividualHead2Head(player)
     .then((data) => {
       res.send(data);

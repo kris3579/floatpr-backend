@@ -1,37 +1,71 @@
 'use strict';
 
 const smashGG = require('smashgg.js');
-const Tournament = smashGG.Tournament;
 
 const processSmashGGTournament = require('../coreFunctions/processSmashGGTournament');
 
 smashGG.initialize(process.env.SMASHGG_API_KEY);
 
-const getTournamentDataFromSmashGG = async (tournament) => {
+const { Tournament, Event } = smashGG;
+
+const getTournamentDataFromSmashGG = (tournament, event) => {
   console.log('Querying Smash.gg for tournament data');
-  const tournamentObject = await Tournament.getTournament(tournament);
+
+  const tournamentData = {};
   
-  const events = await Tournament.getEvents();
-  console.log(events);
+  const tournamentPromise = new Promise((resolve, reject) => {
+    Tournament.get(tournament)
+      .then((tournamentObject) => {
+        tournamentData.tournament = tournamentObject;   
+        resolve();   
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
 
-  // const singles = filter event array ?
+  Event.get(tournament, event)
+    .then((eventObject) => {
+      tournamentData.eventSlug = eventObject.slug;
 
-  // const entrants = await singles.getEntrants();
-  // const sets = await singles.getSets({options: {
-  //   filterDQs: true,
-  //   filterByes: true,
-  // }});
-  // const standings = await singles.getStandings();
+      const setsPromise = new Promise((resolve, reject) => {
+        eventObject.getSets({
+          filterDQs: true,
+          filterByes: true,
+        })
+          .then((sets) => {
+            tournamentData.sets = sets;
+            resolve();
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      });
 
-  // const tournamentData = {
-  //   tournament: tournamentObject,
-  //   entrants: entrants,
-  //   sets: sets,
-  //   standings: standings,
-  // };
+      const standingsPromise = new Promise((resolve, reject) => {
+        eventObject.getStandings()
+          .then((standings) => {
+            tournamentData.standings = standings;
+            resolve();
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      });
 
-  // console.log(tournamentData);
-  // processSmashGGTournament(tournamentData);
+      const promiseArray = [tournamentPromise, setsPromise, standingsPromise];
+    
+      Promise.all(promiseArray)
+        .then(() => {
+          processSmashGGTournament(tournamentData);
+        })
+        .catch((error) => {
+          throw error;
+        });
+    })
+    .catch((error) => {
+      throw error;
+    });
 };
 
 module.exports = getTournamentDataFromSmashGG;

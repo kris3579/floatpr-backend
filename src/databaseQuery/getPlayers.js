@@ -2,25 +2,6 @@
 
 const client = require('../client');
 
-const getPlayersFromDatabase = () => {
-  const playerList = [];
-  const playerObject = {};
-
-  return queryDatabase()
-    .then((data) => {
-      data.rows.forEach((row) => {
-        playerList.push(row);
-        playerObject[row.name] = row;
-      });
-
-      playerObject.activeWashingtonPlayers = activeWashingtonPlayers(playerList);
-      playerObject.washingtonPlayers = washingtonPlayers(playerList);
-      playerObject.allPlayers = playerList;
-
-      return playerObject;
-    });
-};
-
 const queryDatabase = () => {
   return client.query('SELECT * FROM players ORDER BY rating DESC, set_win_rate DESC, game_win_rate DESC;')
     .then((data) => {
@@ -29,14 +10,6 @@ const queryDatabase = () => {
     .catch((error) => {
       throw error;
     });
-};
-
-const activeWashingtonPlayers = (playerList) => {
-  const filteredForActivity = filterInactivePlayers(playerList);
-
-  const filteredForWashingtonPlayers = washingtonPlayers(filteredForActivity);
-
-  return filteredForWashingtonPlayers;
 };
 
 const washingtonPlayers = (playerList) => {
@@ -57,6 +30,33 @@ const filterInactivePlayers = (playerList) => {
   });
 
   return filteredForActivePlayers;
+};
+
+const activeWashingtonPlayers = (playerList) => {
+  const filteredForActivity = filterInactivePlayers(playerList);
+
+  const filteredForWashingtonPlayers = washingtonPlayers(filteredForActivity);
+
+  return filteredForWashingtonPlayers;
+};
+
+const getPlayersFromDatabase = () => {
+  const playerList = [];
+  const playerObject = {};
+
+  return queryDatabase()
+    .then((data) => {
+      data.rows.forEach((row) => {
+        playerList.push(row);
+        playerObject[row.name] = row;
+      });
+
+      playerObject.activeWashingtonPlayers = activeWashingtonPlayers(playerList);
+      playerObject.washingtonPlayers = washingtonPlayers(playerList);
+      playerObject.allPlayers = playerList;
+
+      return playerObject;
+    });
 };
 
 module.exports = getPlayersFromDatabase;

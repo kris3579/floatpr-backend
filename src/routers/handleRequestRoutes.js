@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+
 const handleRequestRouter = express.Router();
 
 const sendNotificationToDiscord = require('../coreFunctions/sendNotificationToDiscord');
@@ -15,21 +16,21 @@ handleRequestRouter.post('/userRequest', (req) => {
 });
 
 handleRequestRouter.post('/combineResults', (req) => {
-  const playerOneName = req.body.playerOneName;
-  const playerTwoName = req.body.playerTwoName;
+  const { playerOneName } = req.body;
+  const { playerTwoName } = req.body;
   combineResults(playerOneName, playerTwoName);
 });
 
 handleRequestRouter.post('/updateMains', (req) => {
-  const playerName = req.body.playerName;
+  const { playerName } = req.body;
   const mains = req.body.mains.split(' ');
-  const doWeDeletePrevious = req.body.doWeDeletePrevious;
+  const { doWeDeletePrevious } = req.body;
   updateMains(playerName, mains, doWeDeletePrevious);
 });
 
 handleRequestRouter.post('/updateState', (req) => {
-  const playerName = req.body.playerName;
-  const state = req.body.state;
+  const { playerName } = req.body;
+  const { state } = req.body;
   updateState(playerName, state);
 });
 

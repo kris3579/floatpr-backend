@@ -1,9 +1,11 @@
 'use strict';
 
 const express = require('express');
+
 const router = express.Router();
 
 const client = require('../client');
+
 client.connect();
 
 const getDatabaseDataRoutes = require('./getDatabaseDataRoutes');
