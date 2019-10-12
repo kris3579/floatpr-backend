@@ -40,7 +40,18 @@ const sortBySetsPlayed = (matchups) => {
   };
 
   Object.keys(matchups).sort((a, b) => {
-    return matchups[b].setsPlayed - matchups[a].setsPlayed;
+    const mA = matchups[a];
+    const mB = matchups[b];
+
+    if (mA.setsPlayed === mB.setsPlayed && mA.setAvg[0] === mB.setAvg[0]) {
+      return mB.gamesPlayed - mA.gamesPlayed;
+    }
+
+    if (mA.setsPlayed === mB.setsPlayed) {
+      return mB.setAvg[0] - mA.setAvg[0];
+    }
+
+    return mB.setsPlayed - mA.setsPlayed;
   })
     .forEach((key) => {
       matchupObject.allMatchups.push(matchups[key]);
@@ -73,19 +84,19 @@ const getIndividualHead2Head = (player) => {
               opponent: set.loser_name,
               setsPlayed: 1,
               setScore: [1, 0],
-              setAvg: ['100%', '0%'],
+              setAvg: ['', ''],
+              gamesPlayed: set.winner_score + set.loser_score,
               gameScore: [set.winner_score, set.loser_score],
-              gameAvg: calculateWinRates(set.winner_score, set.loser_score),
+              gameAvg: ['', ''],
             };
 
             allMatchups[matchupName] = matchup;
           } else {
             matchup.setsPlayed += 1;
             matchup.setScore[0] += 1;
-            matchup.setAvg = calculateWinRates(matchup.setScore[0], matchup.setScore[1]);
             matchup.gameScore[0] += set.winner_score;
             matchup.gameScore[1] += set.loser_score;
-            matchup.gameAvg = calculateWinRates(matchup.gameScore[0], matchup.gameScore[1]);
+            matchup.gamesPlayed += set.winner_score + set.loser_score;
           }
         }
 
@@ -99,21 +110,28 @@ const getIndividualHead2Head = (player) => {
               opponent: set.winner_name,
               setsPlayed: 1,
               setScore: [0, 1],
-              setAvg: ['0%', '100%'],
+              setAvg: ['', ''],
+              gamesPlayed: set.winner_score + set.loser_score,
               gameScore: [set.loser_score, set.winner_score],
-              gameAvg: calculateWinRates(set.loser_score, set.winner_score),
+              gameAvg: ['', ''],
             };
             
             allMatchups[matchupName] = matchup;
           } else {
             matchup.setsPlayed += 1;
             matchup.setScore[1] += 1;
-            matchup.setAvg = calculateWinRates(matchup.setScore[0], matchup.setScore[1]);
             matchup.gameScore[0] += set.loser_score;
             matchup.gameScore[1] += set.winner_score;
-            matchup.gameAvg = calculateWinRates(matchup.gameScore[0], matchup.gameScore[1]);
+            matchup.gamesPlayed += set.winner_score + set.loser_score;
           }
         }
+      });
+
+      Object.keys(allMatchups).forEach((matchupName) => {
+        const matchup = allMatchups[matchupName];
+
+        matchup.setAvg = calculateWinRates(matchup.setScore[0], matchup.setScore[1]);
+        matchup.gameAvg = calculateWinRates(matchup.gameScore[0], matchup.gameScore[1]);
       });
 
       const sortedMatchups = sortBySetsPlayed(allMatchups);

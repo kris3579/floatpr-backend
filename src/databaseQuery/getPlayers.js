@@ -42,20 +42,20 @@ const activeWashingtonPlayers = (playerList) => {
 
 const getPlayersFromDatabase = () => {
   const playerList = [];
-  const playerObject = {};
+  const playersObject = {};
 
   return queryDatabase()
     .then((data) => {
       data.rows.forEach((row) => {
         playerList.push(row);
-        playerObject[row.name] = row;
+        playersObject[row.name] = row;
       });
 
-      playerObject.activeWashingtonPlayers = activeWashingtonPlayers(playerList);
-      playerObject.washingtonPlayers = washingtonPlayers(playerList);
-      playerObject.allPlayers = playerList;
+      playersObject.activeWashingtonPlayers = activeWashingtonPlayers(playerList);
+      playersObject.washingtonPlayers = washingtonPlayers(playerList);
+      playersObject.allPlayers = playerList;
 
-      return playerObject;
+      return playersObject;
     });
 };
 

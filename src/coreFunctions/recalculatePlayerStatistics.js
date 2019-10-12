@@ -73,7 +73,7 @@ const calculateWinRate = (wins, losses) => {
   return newWinRate;
 };
 
-const historiesPush = (player) => {
+const historiesPush = (player, tournamentName) => {
   const setWinRate = calculateWinRate(player.setWins, player.setLosses);
   const gameWinRate = calculateWinRate(player.gameWins, player.gameLosses);
 
@@ -81,13 +81,23 @@ const historiesPush = (player) => {
   player.setWinRateHistory.push(setWinRate);
   player.gameWinRate = gameWinRate;
   player.gameWinRateHistory.push(gameWinRate);
+
+  const ratingDataObject = {
+    xValue: tournamentName,
+    yValue: Math.round(player.glickoProfile.rating),
+    title: '???',
+  };
     
-  player.ratingHistory.push(Math.round(player.glickoProfile.rating));
+  player.ratingHistory.push(ratingDataObject);
 };
 
 const finalHistoryPush = (players) => {
   const promises = Object.keys(players).map((player) => {
     const currentPlayer = players[player];
+
+    currentPlayer.ratingHistory.shift();
+    currentPlayer.setWinRateHistory.shift();
+    currentPlayer.gameWinRateHistory.shift();
     
     return historiesPush(currentPlayer);
   });
@@ -110,7 +120,7 @@ const editPlayersBasedOnSet = (players, set) => {
   const loser = players[loserName];
   
   if (winner.tournaments.includes(set.tournament_id) === false) {
-    winner.tournaments.push(set.tournament_id);
+    historiesPush(winner, set.tournament_name);
     
     winner.attendance += 1;
     
@@ -118,7 +128,7 @@ const editPlayersBasedOnSet = (players, set) => {
       winner.activeAttendance += 1;
     }
     
-    historiesPush(winner);
+    winner.tournaments.push(set.tournament_id);
   }
   
   if (winner.sets.includes(set.id) === false) {
@@ -126,7 +136,7 @@ const editPlayersBasedOnSet = (players, set) => {
   }
   
   if (loser.tournaments.includes(set.tournament_id) === false) {
-    loser.tournaments.push(set.tournament_id);
+    historiesPush(loser, set.tournament_name);
     
     loser.attendance += 1;
     
@@ -134,7 +144,7 @@ const editPlayersBasedOnSet = (players, set) => {
       loser.activeAttendance += 1;
     }
     
-    historiesPush(loser);
+    loser.tournaments.push(set.tournament_id);
   }
   
   if (loser.sets.includes(set.id) === false) {
@@ -214,7 +224,11 @@ const getPlayerNamesFromDatabase = (resolve) => {
           gameWinRate: 100,
           attendance: 0,
           activeAttendance: 0,
-          ratingHistory: [],
+          ratingHistory: [{
+            xValue: 'Start',
+            yValue: '1800',
+            title: '???',
+          }],
           setWinRateHistory: [],
           gameWinRateHistory: [],
           glickoProfile,
