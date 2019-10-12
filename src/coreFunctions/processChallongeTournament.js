@@ -9,10 +9,13 @@ const storeTournamentInDatabase = (tournament) => {
   const placements = {};
   
   Object.keys(tournament.players).forEach((player) => {
-    if (Object.hasOwnProperty.call(placements, tournament.players[player].placement)) {
-      placements[tournament.players[player].placement].push(tournament.players[player].name);
+    const playerPlacement = tournament.players[player].placement;
+    const playerName = tournament.players[player].name;
+
+    if (Object.hasOwnProperty.call(placements, playerPlacement)) {
+      placements[playerPlacement].push(playerName);
     } else {
-      placements[tournament.players[player].placement] = [tournament.players[player].name];
+      placements[playerPlacement] = [playerName];
     }
   });
   JSON.stringify(placements);
@@ -20,13 +23,26 @@ const storeTournamentInDatabase = (tournament) => {
   const url = tournament.full_challonge_url;
   const date = tournament.completed_at;
 
-  const queryConfig = {
-    text: 'INSERT INTO tournaments (id, name, placements, url, date) VALUES ($1, $2, $3, $4, $5);',
-    values: [id, name, placements, url, date],
-  };
-
   console.log('Storing tournament');
-  client.query(queryConfig);
+  client.query(`INSERT INTO tournaments 
+  (
+    id,
+    name,
+    placements,
+    url,
+    date
+  ) 
+  VALUES 
+  (
+    $1, $2, $3, $4, $5
+  );`,
+  [
+    id,
+    name,
+    placements,
+    url,
+    date,
+  ]);
 
   console.log('Recalculating player statistics');
   recalculatePlayerStatistics();
@@ -40,13 +56,56 @@ const checkPlayersForNameAndStoreIfNotFound = (player) => {
         console.log('Player found in database: Not stored', player.name);
       }
       if (data.rowCount === 0) {
-        const queryConfig = {
-          text: 'INSERT INTO players (id, name, rating, mains, state, tournaments, sets, set_wins, set_losses, game_wins, game_losses, set_win_rate, game_win_rate, attendance, active_attendance, rating_history, set_win_rate_history, game_win_rate_history) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18);',
-          values: [player.id, player.name, 1800, ['unknown'], 'WA', [], [], 0, 0, 0, 0, 100, 100, 0, 0, [], [], []],
-        };
+        const jsonObject = JSON.stringify({});
 
         console.log('Storing player in database', player.name, player.id);
-        client.query(queryConfig);
+        client.query(`INSERT INTO players 
+        (
+          id,
+          name,
+          rating,
+          mains,
+          state,
+          tournaments,
+          tournament_names,
+          sets,
+          set_wins,
+          set_losses,
+          game_wins,
+          game_losses,
+          set_win_rate,
+          game_win_rate,
+          attendance,
+          active_attendance,
+          rating_history,
+          set_win_rate_history,
+          game_win_rate_history
+        )
+        VALUES 
+        (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+        );`,
+        [
+          player.id,
+          player.name,
+          1800,
+          ['unknown'],
+          'WA',
+          [],
+          [],
+          [],
+          0,
+          0,
+          0,
+          0,
+          100,
+          100,
+          0,
+          0,
+          jsonObject,
+          jsonObject,
+          jsonObject,
+        ]);
       }
     })
     .catch((error) => {
@@ -61,6 +120,7 @@ const processTournamentPlayers = (tournament) => {
 
   Promise.all(promises)
     .then(() => {
+      console.log('store tournament');
       storeTournamentInDatabase(tournament);
     })
     .catch((error) => {
@@ -125,24 +185,36 @@ const storeSetInDatabase = (set, tournament) => {
     winnerScore += splitScores[2];
     loserScore += splitScores[0];
   }
-
-  const queryConfig = {
-    text: 'INSERT INTO sets (id, round, winner_name, loser_name, tournament_id, tournament_name, winner_score, loser_score, date) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);',
-    values: [
-      id,
-      round,
-      winnerName,
-      loserName,
-      tournamentId,
-      tournamentName,
-      winnerScore,
-      loserScore,
-      date,
-    ],
-  };
+  
 
   console.log(`Storing set in database Winner: ${winnerName}, Loser: ${loserName}`);
-  client.query(queryConfig);
+  client.query(`INSERT INTO sets 
+  (
+    id,
+    round,
+    winner_name,
+    loser_name,
+    tournament_id,
+    tournament_name,
+    winner_score,
+    loser_score,
+    date
+  )
+  VALUES
+  (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
+  );`,
+  [
+    id,
+    round,
+    winnerName,
+    loserName,
+    tournamentId,
+    tournamentName,
+    winnerScore,
+    loserScore,
+    date,
+  ]);
 };
 
 const processTournamentSets = (tournament) => {
