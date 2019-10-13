@@ -13,7 +13,6 @@ const removePlayersWithNoData = () => {
 };
 
 const updatePlayerInDatabase = (player) => {
-  console.log(player.ratingHistory);
   client.query(`UPDATE players SET 
   rating = $1,
   tournaments = $2,
@@ -44,9 +43,9 @@ const updatePlayerInDatabase = (player) => {
     player.gameWinRate,
     player.attendance,
     player.activeAttendance,
-    JSON.stringify(player.ratingHistory),
-    JSON.stringify(player.setWinRateHistory),
-    JSON.stringify(player.gameWinRateHistory),
+    player.ratingHistory,
+    player.setWinRateHistory,
+    player.gameWinRateHistory,
     player.name,
   ]);
 };
@@ -77,49 +76,15 @@ const calculateWinRate = (wins, losses) => {
 };
 
 const historiesPush = (player) => {
-  const lastTournament = player.tournamentNames[player.tournamentNames.length - 1];
-
   const setWinRate = calculateWinRate(player.setWins, player.setLosses);
   const gameWinRate = calculateWinRate(player.gameWins, player.gameLosses);
   
   player.setWinRate = setWinRate;
   player.gameWinRate = gameWinRate;
   
-  let ratingDataObject = {
-    x: lastTournament,
-    y: Math.round(player.glickoProfile.rating),
-  };
-  
-  let setWinRateDataObject = {
-    x: lastTournament,
-    y: setWinRate,
-  };
-  
-  let gameWinRateDataObject = {
-    x: lastTournament,
-    y: gameWinRate,
-  };
-
-  if (!lastTournament) {
-    ratingDataObject = {
-      x: 'Start',
-      y: 1800,
-    };
-
-    setWinRateDataObject = {
-      x: 'Start',
-      y: 0,
-    };
-
-    gameWinRateDataObject = {
-      x: 'Start',
-      y: 0,
-    };
-  }
-  
-  player.ratingHistory.push(ratingDataObject);
-  player.setWinRateHistory.push(setWinRateDataObject);
-  player.gameWinRateHistory.push(gameWinRateDataObject);
+  player.ratingHistory.push(Math.round(player.glickoProfile.rating));
+  player.setWinRateHistory.push(setWinRate);
+  player.gameWinRateHistory.push(gameWinRate);
 };
 
 const finalHistoryPush = (players) => {
@@ -244,7 +209,7 @@ const getPlayerNamesFromDatabase = (resolve) => {
         players[`${player.name}`] = {
           name: player.name,
           tournaments: [],
-          tournamentNames: [],
+          tournamentNames: ['Start'],
           sets: [],
           setWins: 0,
           setLosses: 0,
@@ -259,7 +224,6 @@ const getPlayerNamesFromDatabase = (resolve) => {
           gameWinRateHistory: [],
           glickoProfile,
         };
-        console.log(players[`${player.name}`]);
       });
 
       resolve(players);
