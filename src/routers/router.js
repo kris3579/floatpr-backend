@@ -8,13 +8,20 @@ const client = require('../client');
 
 client.connect();
 
+const discordNotificationRoute = require('./discordNotificationRoute');
 const getDatabaseDataRoutes = require('./getDatabaseDataRoutes');
 const getTournamentDataRoutes = require('./getTournamentDataRoutes');
-const handleRequestRoutes = require('./handleRequestRoutes');
+const updatePlayerRoutes = require('./updatePlayerRoutes');
+
+const adminAuthenticator = require('./auth/adminAuthenticator.js');
 
 router.use(getDatabaseDataRoutes);
+router.use(discordNotificationRoute);
+
+router.use(adminAuthenticator);
+
 router.use(getTournamentDataRoutes);
-router.use(handleRequestRoutes);
+router.use(updatePlayerRoutes);
 
 router.all('*', (req, res) => {
   console.log('Returning 404 from catch-all route');
