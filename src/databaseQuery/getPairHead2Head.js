@@ -17,16 +17,10 @@ const calculateWinRates = (player1Score, player2Score) => {
   let player2WinRate = ((player2Score / (player2Score + player1Score)) * 100);
 
   if (Number.isInteger(player1WinRate) === false) {
-    player1WinRate = `${player1WinRate.toFixed(2)}%`;
+    player1WinRate = player1WinRate.toFixed(2);
   }
   if (Number.isInteger(player2WinRate) === false) {
-    player2WinRate = `${player2WinRate.toFixed(2)}%`;
-  }
-  if (Number.isInteger(player1WinRate) === true) {
-    player1WinRate = `${player1WinRate}%`;
-  }
-  if (Number.isInteger(player2WinRate) === true) {
-    player2WinRate = `${player2WinRate}%`;
+    player2WinRate = player2WinRate.toFixed(2);
   }
 
   return [player1WinRate, player2WinRate];
@@ -40,10 +34,10 @@ const getPairHead2Head = (player1, player2) => {
     setsPlayed: 0,
     setsArray: [],
     setScore: [0, 0],
-    setAvg: ['100%', '100%'],
+    setAvg: [],
     gamesPlayed: 0,
     gameScore: [0, 0],
-    gameAvg: ['100%', '100%'],
+    gameAvg: [],
   };
 
   return queryDatabase(player1, player2)

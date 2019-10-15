@@ -17,16 +17,10 @@ const calculateWinRates = (player1Score, player2Score) => {
   let player2WinRate = ((player2Score / (player2Score + player1Score)) * 100);
 
   if (Number.isInteger(player1WinRate) === false) {
-    player1WinRate = `${player1WinRate.toFixed(2)}%`;
+    player1WinRate = player1WinRate.toFixed(2);
   }
   if (Number.isInteger(player2WinRate) === false) {
-    player2WinRate = `${player2WinRate.toFixed(2)}%`;
-  }
-  if (Number.isInteger(player1WinRate) === true) {
-    player1WinRate = `${player1WinRate}%`;
-  }
-  if (Number.isInteger(player2WinRate) === true) {
-    player2WinRate = `${player2WinRate}%`;
+    player2WinRate = player2WinRate.toFixed(2);
   }
 
   return [player1WinRate, player2WinRate];
@@ -84,10 +78,10 @@ const getIndividualHead2Head = (player) => {
               opponent: set.loser_name,
               setsPlayed: 1,
               setScore: [1, 0],
-              setAvg: ['', ''],
+              setAvg: [],
               gamesPlayed: set.winner_score + set.loser_score,
               gameScore: [set.winner_score, set.loser_score],
-              gameAvg: ['', ''],
+              gameAvg: [],
             };
 
             allMatchups[matchupName] = matchup;
@@ -110,10 +104,10 @@ const getIndividualHead2Head = (player) => {
               opponent: set.winner_name,
               setsPlayed: 1,
               setScore: [0, 1],
-              setAvg: ['', ''],
+              setAvg: [],
               gamesPlayed: set.winner_score + set.loser_score,
               gameScore: [set.loser_score, set.winner_score],
-              gameAvg: ['', ''],
+              gameAvg: [],
             };
             
             allMatchups[matchupName] = matchup;

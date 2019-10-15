@@ -27,16 +27,10 @@ const calculateWinRates = (player1Score, player2Score) => {
   let player2WinRate = ((player2Score / (player2Score + player1Score)) * 100);
 
   if (Number.isInteger(player1WinRate) === false) {
-    player1WinRate = `${player1WinRate.toFixed(2)}%`;
+    player1WinRate = player1WinRate.toFixed(2);
   }
   if (Number.isInteger(player2WinRate) === false) {
-    player2WinRate = `${player2WinRate.toFixed(2)}%`;
-  }
-  if (Number.isInteger(player1WinRate) === true) {
-    player1WinRate = `${player1WinRate}%`;
-  }
-  if (Number.isInteger(player2WinRate) === true) {
-    player2WinRate = `${player2WinRate}%`;
+    player2WinRate = player2WinRate.toFixed(2);
   }
 
   return [player1WinRate, player2WinRate];
@@ -60,9 +54,9 @@ const getTopPlayerHead2Head = () => {
       matchupsArray.forEach((matchup) => {
         topPlayerH2H[matchup] = {
           setScore: [0, 0],
-          setAvg: ['N/A', 'N/A'],
+          setAvg: [],
           gameScore: [0, 0],
-          gameAvg: ['N/A', 'N/A'],
+          gameAvg: [],
         };
       });
 
