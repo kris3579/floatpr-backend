@@ -253,6 +253,7 @@ const makePlayersObject = (tournament) => {
 const filterSetsForTournament = (tournament) => {
   console.log('Filtering sets for empty scores or DQ\'s');
   const rounds = ['0', '0'];
+
   tournament.matches.forEach((set) => {
     if (set.match.round > rounds[0]) {
       rounds[0] = set.match.round;
@@ -262,12 +263,6 @@ const filterSetsForTournament = (tournament) => {
     }
   });
 
-  
-  // tournament.matches.forEach((set) => {
-  //   if (set.match.round === rounds[0]) {
-  //     grandFinalsCounter += 1;
-  //   }
-  // });
   const grandFinalsCounter = 0;
 
   const filteredForEmptyScores = tournament.matches.filter((set) => {
