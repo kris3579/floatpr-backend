@@ -4,7 +4,7 @@ const webhook = require('webhook-discord');
 
 const Hook = new webhook.Webhook(`${process.env.DISCORD_WEBHOOK_URL}`);
 
-const sendNotificationToDiscord = (request) => {
+const sendNotificationToDiscord = (request, resolve) => {
   let requestText = '';
   switch (request.requestType) {
     case 'addTournament':
@@ -29,6 +29,7 @@ const sendNotificationToDiscord = (request) => {
     .setTime();
 
   Hook.send(msg);
+  resolve();
 };
 
 module.exports = sendNotificationToDiscord;
