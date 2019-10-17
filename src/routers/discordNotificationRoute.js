@@ -6,10 +6,17 @@ const discordNotificationRouter = express.Router();
 
 const sendNotificationToDiscord = require('../coreFunctions/sendNotificationToDiscord');
 
-discordNotificationRouter.post('/userRequest', (req) => {
+discordNotificationRouter.post('/userRequest', (req, res) => {
   console.log('Recieved request from user to send to Kris at discord');
-  console.log(req.body);
-  sendNotificationToDiscord(req.body);
+  new Promise((resolve) => {
+    sendNotificationToDiscord(req.body, resolve);
+  })
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch(() => {
+      res.sendStatus(500);
+    });
 });
 
 module.exports = discordNotificationRouter;

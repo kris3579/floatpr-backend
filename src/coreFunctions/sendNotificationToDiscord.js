@@ -4,14 +4,14 @@ const webhook = require('webhook-discord');
 
 const Hook = new webhook.Webhook(`${process.env.DISCORD_WEBHOOK_URL}`);
 
-const sendNotificationToDiscord = (request) => {
+const sendNotificationToDiscord = (request, resolve) => {
   let requestText = '';
   switch (request.requestType) {
     case 'addTournament':
       requestText = `Request to add the tournament located at ${request.tournamentURL} to the database.`;
       break;
     case 'editMains':
-      requestText = `Request from user ${request.user} to edit their mains. newMain: ${request.newMain}, doWeDelete: ${request.doWeDelete}`;
+      requestText = `Request from user ${request.user} to edit their mains. Main: ${request.firstMain}, Second: ${request.secondMain || 'None'}, Third: ${request.thirdMain || 'None'}`;
       break;
     case 'editState':
       requestText = `Request from user ${request.user} to edit thier state/region. newState: ${request.state}`;
@@ -29,6 +29,7 @@ const sendNotificationToDiscord = (request) => {
     .setTime();
 
   Hook.send(msg);
+  resolve();
 };
 
 module.exports = sendNotificationToDiscord;

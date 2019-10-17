@@ -198,6 +198,18 @@ const processTournamentSets = (tournamentData) => {
     });
 };
 
+const filterSetsForTournament = (tournamentData) => {
+  console.log('Filtering sets for empty scores');
+
+  const filteredForEmptyScores = tournamentData.sets.filter((set) => {
+    return set.score1 !== 0 || set.score2 !== 0;
+  });
+
+  tournamentData.sets = filteredForEmptyScores;
+
+  processTournamentSets(tournamentData);
+};  
+
 const checkDatabaseForTournament = (tournamentData) => {
   console.log('Checking database for tournament');
   return client.query(`SELECT name FROM tournaments WHERE id = ${tournamentData.tournament.id};`)
@@ -207,7 +219,7 @@ const checkDatabaseForTournament = (tournamentData) => {
       }
       if (data.rowCount === 0) {
         console.log('Process tournament sets');
-        processTournamentSets(tournamentData);
+        filterSetsForTournament(tournamentData);
       }
     })
     .catch((error) => {

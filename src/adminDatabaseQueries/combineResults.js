@@ -30,7 +30,7 @@ const updateWinnerNameInSets = (playerOneName, playerTwoName) => {
     });
 };
 
-const combineResults = (playerOneName, playerTwoName) => {
+const combineResults = (playerOneName, playerTwoName, resolve) => {
   console.log(`Merging results of ${playerTwoName} into ${playerOneName}`);
   updateWinnerNameInSets(playerOneName, playerTwoName)
     .then(() => {
@@ -38,6 +38,7 @@ const combineResults = (playerOneName, playerTwoName) => {
         .then(() => {
           deleteMergingPlayer(playerTwoName)
             .then(() => {
+              resolve();
               callRecalculate();
             })
             .catch((error) => {

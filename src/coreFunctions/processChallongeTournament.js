@@ -156,25 +156,29 @@ const storeSetInDatabase = (set, tournament) => {
     round = `Losers Round ${Math.abs(set.round)}`;
   }
   if (set.round === tournament.rounds[1] + 2) {
-    round = 'Losers Quarterfinals';
+    round = 'Losers Quarterfinal';
   }
   if (set.round === tournament.rounds[1] + 1) {
-    round = 'Losers Semifinals';
+    round = 'Losers Semifinal';
   }
   if (set.round === tournament.rounds[1]) {
-    round = 'Losers Finals';
+    round = 'Losers Final';
   }
   if (set.round === tournament.rounds[0] - 3 && tournament.rounds[0] > 5) {
-    round = 'Winners Quarterfinals';
+    round = 'Winners Quarterfinal';
   }
   if (set.round === tournament.rounds[0] - 2) {
-    round = 'Winners Semifinals';
+    round = 'Winners Semifinal';
   }
   if (set.round === tournament.rounds[0] - 1) {
-    round = 'Winners Finals';
+    round = 'Winners Final';
   }
   if (set.round === tournament.rounds[0]) {
-    round = 'Grand Finals';
+    tournament.grandFinalsCounter += 1;
+    round = 'Grand Final';
+  }
+  if (set.round === tournament.rounds[0] && tournament.grandFinalsCounter === 2) {
+    round = 'Grand Final Reset';
   }
 
   if (splitScores[0] > splitScores[2]) {
@@ -249,6 +253,7 @@ const makePlayersObject = (tournament) => {
 const filterSetsForTournament = (tournament) => {
   console.log('Filtering sets for empty scores or DQ\'s');
   const rounds = ['0', '0'];
+
   tournament.matches.forEach((set) => {
     if (set.match.round > rounds[0]) {
       rounds[0] = set.match.round;
@@ -258,6 +263,8 @@ const filterSetsForTournament = (tournament) => {
     }
   });
 
+  const grandFinalsCounter = 0;
+
   const filteredForEmptyScores = tournament.matches.filter((set) => {
     return set.match.scores_csv !== '';
   });
@@ -266,8 +273,10 @@ const filterSetsForTournament = (tournament) => {
     return set.match.scores_csv.match(/-/g).length === 1;
   });
 
+  tournament.grandFinalsCounter = grandFinalsCounter;
   tournament.matches = filteredForDQSets;
   tournament.rounds = rounds;
+
   makePlayersObject(tournament);
 };
 
