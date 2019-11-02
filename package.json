@@ -14,8 +14,8 @@
     "webhook-discord": "^3.2.0"
   },
   "scripts": {
-    "start": "node server.js",
-    "lint": "eslint src/**/*.js"
+    "start": "node src/server.js",
+    "lint": "eslint './**/*.js'"
   },
   "repository": {
     "type": "git",
@@ -28,7 +28,7 @@
     "Washington pr",
     "pr"
   ],
-  "author": "Kris Esvelt (Digital)",
+  "author": "Kris 'Digital' Esvelt",
   "license": "MIT",
   "bugs": "",
   "homepage": "",

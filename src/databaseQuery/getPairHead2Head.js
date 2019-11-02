@@ -2,16 +2,6 @@
 
 const client = require('../client');
 
-const queryDatabase = (player1, player2) => {
-  return client.query('SELECT * FROM sets WHERE winner_name = $1 AND loser_name = $2 OR winner_name = $2 AND loser_name = $1 ORDER BY date DESC;', [player1, player2])
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      throw error;
-    });
-};
-
 const calculateWinRates = (player1Score, player2Score) => {
   let player1WinRate = ((player1Score / (player1Score + player2Score)) * 100);
   let player2WinRate = ((player2Score / (player2Score + player1Score)) * 100);
@@ -24,6 +14,16 @@ const calculateWinRates = (player1Score, player2Score) => {
   }
 
   return [player1WinRate, player2WinRate];
+};
+
+const queryDatabase = (player1, player2) => {
+  return client.query('SELECT * FROM sets WHERE winner_name = $1 AND loser_name = $2 OR winner_name = $2 AND loser_name = $1 ORDER BY date DESC;', [player1, player2])
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      throw error;
+    });
 };
 
 const getPairHead2Head = (player1, player2) => {
