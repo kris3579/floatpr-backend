@@ -14,7 +14,9 @@ app.use(express.urlencoded({
   extended: true,
 }));
 
-app.listen(PORT, () => console.log(`Server up on Port: ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server up on Port: ${PORT}`);
+});
 
 const client = require('./client');
 
@@ -25,7 +27,7 @@ const getDatabaseDataRoutes = require('./routers/getDatabaseDataRoutes');
 const getTournamentDataRoutes = require('./routers/getTournamentDataRoutes');
 const updatePlayerRoutes = require('./routers/updatePlayerRoutes');
 
-const adminAuthenticator = require('./routers/auth/adminAuthenticator.js');
+const adminAuthenticator = require('./auth/adminAuthenticator.js');
 
 app.use(getDatabaseDataRoutes);
 app.use(discordNotificationRoute);

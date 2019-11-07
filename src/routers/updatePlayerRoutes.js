@@ -7,6 +7,7 @@ const updatePlayerRouter = express.Router();
 const combineResults = require('../adminDatabaseQueries/combineResults');
 const updateMains = require('../adminDatabaseQueries/updateMains');
 const updateState = require('../adminDatabaseQueries/updateState');
+const updateSponser = require('../adminDatabaseQueries/updateSponser');
 
 updatePlayerRouter.post('/combineResults', (req, res) => {
   const { playerOneName, playerTwoName } = req.body;
@@ -42,6 +43,20 @@ updatePlayerRouter.post('/updateState', (req, res) => {
 
   new Promise((resolve) => {
     updateState(playerName, state, resolve);
+  })
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch(() => {
+      res.sendStatus(500);
+    });
+});
+
+updatePlayerRouter.post('/updateSponser', (req, res) => {
+  const { playerName, sponser } = req.body;
+
+  new Promise((resolve) => {
+    updateSponser(playerName, sponser, resolve);
   })
     .then(() => {
       res.sendStatus(200);

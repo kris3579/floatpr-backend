@@ -16,6 +16,9 @@ const sendNotificationToDiscord = (request, resolve) => {
     case 'editState':
       requestText = `Request from user ${request.user} to edit thier state/region. newState: ${request.state}`;
       break;
+    case 'editSponser':
+      requestText = `Request from user ${request.user} to edit their sponser. Sponser: ${request.sponser}`;
+      break;
     case 'combineResults':
       requestText = `Request from user ${request.userTag} to merge the results from secondTag: ${request.secondTag}.`;
       break;

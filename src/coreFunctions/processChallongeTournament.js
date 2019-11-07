@@ -20,6 +20,7 @@ const storeTournamentInDatabase = (tournament) => {
   });
   JSON.stringify(placements);
 
+  const entrants = tournament.participants_count;
   const url = tournament.full_challonge_url;
   const date = tournament.completed_at;
 
@@ -28,17 +29,19 @@ const storeTournamentInDatabase = (tournament) => {
   (
     id,
     name,
+    entrants,
     placements,
     url,
     date
   ) 
   VALUES 
   (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5, $6
   );`,
   [
     id,
     name,
+    entrants,
     placements,
     url,
     date,
@@ -50,6 +53,7 @@ const storeTournamentInDatabase = (tournament) => {
 
 const checkPlayersForNameAndStoreIfNotFound = (player) => {
   console.log('Checking database for player');
+
   return client.query('SELECT * FROM players WHERE players.name = $1;', [player.name])
     .then((data) => {
       if (data.rowCount > 0) {
@@ -63,6 +67,7 @@ const checkPlayersForNameAndStoreIfNotFound = (player) => {
         (
           id,
           name,
+          sponser,
           rating,
           mains,
           state,
@@ -83,11 +88,12 @@ const checkPlayersForNameAndStoreIfNotFound = (player) => {
         )
         VALUES 
         (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
         );`,
         [
           player.id,
           player.name,
+          player.sponser,
           1800,
           ['unknown'],
           'WA',
@@ -239,9 +245,15 @@ const makePlayersObject = (tournament) => {
   const playerObject = {};
 
   tournament.participants.forEach((player) => {
+    const noMultipleSpaces = player.participant.name.replace(/\s{2,}/, '');
+
+    const name = noMultipleSpaces.match(/\w[^|]+$/);
+    const sponser = noMultipleSpaces.match(/.*\b(?=.\|)/) || '';
+
     playerObject[player.participant.id] = {
       id: player.participant.id,
-      name: player.participant.name,
+      name,
+      sponser,
       placement: player.participant.final_rank,
     };
   });

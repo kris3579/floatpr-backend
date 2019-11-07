@@ -9,6 +9,7 @@ smashGG.initialize(process.env.SMASHGG_API_KEY);
 
 const storeTournamentInDatabase = (tournamentData) => {
   const { id, name } = tournamentData.tournament;
+  const entrants = tournamentData.tournament.numberOfEntrants;
   const url = `https://smash.gg/${tournamentData.eventSlug}`;
   const date = tournamentData.tournament.endTime;
 
@@ -29,6 +30,7 @@ const storeTournamentInDatabase = (tournamentData) => {
   (
     id,
     name,
+    entrants,
     placements,
     url,
     date
@@ -40,6 +42,7 @@ const storeTournamentInDatabase = (tournamentData) => {
   [
     id,
     name,
+    entrants,
     placements,
     url,
     date,
@@ -51,7 +54,12 @@ const storeTournamentInDatabase = (tournamentData) => {
 
 const checkPlayersForNameAndStoreIfNotFound = (player) => {
   console.log('Checking database for the player');
-  return client.query('SELECT * FROM players WHERE players.name = $1', [player.entrant.name])
+  const noMultipleSpaces = player.entrant.name.replace(/\s{2,}/, '');
+
+  const name = noMultipleSpaces.match(/\w[^|]+$/);
+  const sponser = noMultipleSpaces.match(/.*\b(?=.\|)/) || '';
+
+  return client.query('SELECT * FROM players WHERE players.name = $1', [name])
     .then((data) => {
       if (data.rowCount > 0) {
         console.log('Player found in database: Not stored', player.entrant.name);
@@ -64,6 +72,7 @@ const checkPlayersForNameAndStoreIfNotFound = (player) => {
         (
           id,
           name,
+          sponser,
           rating,
           mains,
           state,
@@ -84,11 +93,12 @@ const checkPlayersForNameAndStoreIfNotFound = (player) => {
         )
         VALUES
         (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
         );`,
         [
           player.entrant.id,
-          player.entrant.name,
+          name,
+          sponser,
           1800,
           ['unknown'],
           'WA',

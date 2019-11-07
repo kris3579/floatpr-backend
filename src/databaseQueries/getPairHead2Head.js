@@ -40,8 +40,15 @@ const getPairHead2Head = (player1, player2) => {
     gameAvg: [],
   };
 
-  return queryDatabase(player1, player2)
+  const player1Name = player1.match(/\w[^|]+$/);
+  const player2Name = player2.match(/\w[^|]+$/);
+
+  return queryDatabase(player1Name, player2Name)
     .then((sets) => {
+      if (sets.rows.length === 0) {
+        return null;
+      }
+      
       sets.rows.forEach((set) => {
         h2HObject.setsPlayed += 1;
         h2HObject.gamesPlayed += set.winner_score;
@@ -64,7 +71,11 @@ const getPairHead2Head = (player1, player2) => {
         h2HObject.gameAvg = calculateWinRates(h2HObject.gameScore[0], h2HObject.gameScore[1]);
       });
 
+      console.log(h2HObject);
       return h2HObject;
+    })
+    .catch((error) => {
+      return error;
     });
 };
 

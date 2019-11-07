@@ -112,7 +112,9 @@ const editPlayersBasedOnSet = (players, set) => {
   const loser = players[loserName];
   
   if (winner.tournaments.includes(set.tournament_id) === false) {
-    historiesPush(winner);
+    if (winner.tournaments.length !== 0) {
+      historiesPush(winner);
+    }
     
     winner.attendance += 1;
     
@@ -129,7 +131,9 @@ const editPlayersBasedOnSet = (players, set) => {
   }
   
   if (loser.tournaments.includes(set.tournament_id) === false) {
-    historiesPush(loser);
+    if (loser.tournaments.length !== 0) {
+      historiesPush(loser);
+    }
     
     loser.attendance += 1;
     
@@ -209,7 +213,7 @@ const getPlayerNamesFromDatabase = (resolve) => {
         players[`${player.name}`] = {
           name: player.name,
           tournaments: [],
-          tournamentNames: ['Start'],
+          tournamentNames: [],
           sets: [],
           setWins: 0,
           setLosses: 0,
