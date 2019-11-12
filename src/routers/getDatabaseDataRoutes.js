@@ -62,7 +62,6 @@ getDatabaseDataRouter.get('/getPairHead2Head/:player1/:player2', (req, res) => {
   const { player2 } = req.params;
   getPairHead2Head(player1, player2)
     .then((data) => {
-      console.log('here');
       res.send(data);
     })
     .catch((error) => {

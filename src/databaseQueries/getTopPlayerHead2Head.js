@@ -3,7 +3,7 @@
 const client = require('../client');
 
 const queryDatabaseForTopPlayers = () => {
-  return client.query('SELECT * FROM players WHERE state = \'WA\' AND active_attendance > 1 ORDER BY rating DESC LIMIT 10;')
+  return client.query('SELECT * FROM players WHERE state = \'WA\' AND active_attendance >= 1 ORDER BY rating DESC LIMIT 10;')
     .then((data) => {
       return data.rows;
     })

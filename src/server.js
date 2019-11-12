@@ -25,7 +25,7 @@ client.connect();
 const discordNotificationRoute = require('./routers/discordNotificationRoute');
 const getDatabaseDataRoutes = require('./routers/getDatabaseDataRoutes');
 const getTournamentDataRoutes = require('./routers/getTournamentDataRoutes');
-const updatePlayerRoutes = require('./routers/updatePlayerRoutes');
+const updatePlayerRoutes = require('./routers/updateDatabaseRoutes');
 
 const adminAuthenticator = require('./auth/adminAuthenticator.js');
 

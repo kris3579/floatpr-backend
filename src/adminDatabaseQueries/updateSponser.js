@@ -8,6 +8,9 @@ const updateSponser = (playerName, sponser, resolve) => {
   client.query('UPDATE players SET sponser = $1 WHERE name = $2;', [sponser, playerName])
     .then(() => {
       resolve();
+    })
+    .catch((error) => {
+      throw error;
     });
 };
 
