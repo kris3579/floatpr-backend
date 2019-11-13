@@ -2,7 +2,7 @@
 
 const client = require('../client');
 
-const updateSetSponsers = (resolve) => {
+const updateSponsers = (resolve) => {
   console.log('Updateing sponsers in sets to reflect sponser in players');
 
   client.query('SELECT name, sponser FROM players;')
@@ -25,6 +25,5 @@ const updateSetSponsers = (resolve) => {
       resolve();
     });
 };
-      
 
-module.exports = updateSetSponsers;
+module.exports = updateSponsers;

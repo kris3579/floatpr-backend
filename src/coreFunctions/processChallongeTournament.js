@@ -4,7 +4,7 @@ const client = require('../client');
 const recalculatePlayerStatistics = require('./recalculatePlayerStatistics');
 
 const storeTournamentInDatabase = (tournament, playersObject) => {
-  const { id, name } = tournament;
+  const { id, name, numberOfSets } = tournament;
 
   const placements = {};
   
@@ -32,19 +32,21 @@ const storeTournamentInDatabase = (tournament, playersObject) => {
   (
     id,
     name,
-    entrants,
+    number_of_entrants,
+    number_of_sets,
     placements,
     url,
     date
   ) 
   VALUES 
   (
-    $1, $2, $3, $4, $5, $6
+    $1, $2, $3, $4, $5, $6, $7
   );`,
   [
     id,
     name,
     entrants,
+    numberOfSets,
     placements,
     url,
     date,
@@ -116,7 +118,7 @@ const storeSetInDatabase = (set, tournament, playersObject) => {
   }
   
 
-  console.log(`Storing set in database Winner: ${winnerSponser} ${winnerName}, Loser: ${loserSponser} ${loserName}`);
+  console.log(`Storing set in database Winner: ${winnerName}, Loser: ${loserName}`);
   client.query(`INSERT INTO sets 
   (
     id,
@@ -189,6 +191,7 @@ const filterSetsForTournament = (tournament, playersObject) => {
 
   tournament.grandFinalsCounter = grandFinalsCounter;
   tournament.matches = filteredForDQSets;
+  tournament.numberOfSets = filteredForDQSets.length;
   tournament.rounds = rounds;
 
   processTournamentSets(tournament, playersObject);

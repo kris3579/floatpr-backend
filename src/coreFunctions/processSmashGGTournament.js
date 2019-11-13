@@ -9,7 +9,7 @@ smashGG.initialize(process.env.SMASHGG_API_KEY);
 
 const storeTournamentInDatabase = (tournamentData, playersObject) => {
   const { id, name } = tournamentData.tournament;
-  const entrants = tournamentData.numberOfEntrants;
+  const { numberOfEntrants, numberOfSets } = tournamentData;
   const url = `https://smash.gg/${tournamentData.eventSlug}`;
   const date = tournamentData.tournament.endTime;
 
@@ -35,19 +35,21 @@ const storeTournamentInDatabase = (tournamentData, playersObject) => {
   (
     id,
     name,
-    entrants,
+    number_of_entrants,
+    number_of_sets,
     placements,
     url,
     date
   )
   VALUES
   (
-    $1, $2, $3, $4, $5, $6
+    $1, $2, $3, $4, $5, $6, $7
   );`,
   [
     id,
     name,
-    entrants,
+    numberOfEntrants,
+    numberOfSets,
     placements,
     url,
     date,
@@ -90,7 +92,7 @@ const storeSetInDatabase = (set, tournamentData, playersObject) => {
   const loserName = loser.name;
   const loserSponser = loser.sponser;
           
-  console.log(`Storing set in database Winner: ${winnerSponser} ${winnerName}, Loser: ${loserSponser} ${loserName}`);
+  console.log(`Storing set in database Winner: ${winnerName}, Loser: ${loserName}`);
   client.query(`INSERT INTO sets 
     (
       id,
@@ -147,6 +149,7 @@ const filterSetsForTournament = (tournamentData, playersObject) => {
   });
 
   tournamentData.sets = filteredForEmptyScores;
+  tournamentData.numberOfSets = filteredForEmptyScores.length;
 
   processTournamentSets(tournamentData, playersObject);
 };

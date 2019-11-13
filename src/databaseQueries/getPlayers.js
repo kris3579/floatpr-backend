@@ -12,32 +12,28 @@ const queryDatabase = () => {
     });
 };
 
-const washingtonPlayers = (playerList) => {
-  const filteredForWashingtonPlayers = playerList.filter((player) => {
+const activeWashingtonPlayers = (playerList) => {
+  const filteredForEnoughAttendance = playerList.filter((player) => {
+    return player.attendance > 4;
+  });
+
+  const filteredForActivePlayers = filteredForEnoughAttendance.filter((player) => {
+    return player.active_attendance > 3;
+  });
+
+  const filteredForWashingtonPlayers = filteredForActivePlayers.filter((player) => {
     return player.state === 'WA';
   });
 
   return filteredForWashingtonPlayers;
 };
 
-const filterInactivePlayers = (playerList) => {
+const allPlayers = (playerList) => {
   const filteredForEnoughAttendance = playerList.filter((player) => {
     return player.attendance > 4;
   });
 
-  const filteredForActivePlayers = filteredForEnoughAttendance.filter((player) => {
-    return player.active_attendance > 1;
-  });
-
-  return filteredForActivePlayers;
-};
-
-const activeWashingtonPlayers = (playerList) => {
-  const filteredForActivity = filterInactivePlayers(playerList);
-
-  const filteredForWashingtonPlayers = washingtonPlayers(filteredForActivity);
-
-  return filteredForWashingtonPlayers;
+  return filteredForEnoughAttendance;
 };
 
 const getPlayersFromDatabase = () => {
@@ -52,8 +48,7 @@ const getPlayersFromDatabase = () => {
       });
 
       playersObject.activeWashingtonPlayers = activeWashingtonPlayers(playerList);
-      playersObject.washingtonPlayers = washingtonPlayers(playerList);
-      playersObject.allPlayers = playerList;
+      playersObject.allPlayers = allPlayers(playerList);
 
       return playersObject;
     });

@@ -118,7 +118,7 @@ const editPlayersBasedOnSet = (players, set) => {
     
     winner.attendance += 1;
     
-    if ((new Date() - set.date) < (1000 * 60 * 60 * 24 * 30 * 6)) {
+    if ((new Date() - set.date) < (1000 * 60 * 60 * 24 * 30 * 2)) {
       winner.activeAttendance += 1;
     }
     
