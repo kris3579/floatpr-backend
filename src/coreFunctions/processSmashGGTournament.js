@@ -3,7 +3,6 @@
 const smashGG = require('smashgg.js');
 
 const client = require('../client');
-const recalculatePlayerStatistics = require('./recalculatePlayerStatistics');
 
 smashGG.initialize(process.env.SMASHGG_API_KEY);
 
@@ -54,9 +53,6 @@ const storeTournamentInDatabase = (tournamentData, playersObject) => {
     url,
     date,
   ]);
-
-  console.log('Recalculating player statistics');
-  recalculatePlayerStatistics();
 };
 
 const storeSetInDatabase = (set, tournamentData, playersObject) => {

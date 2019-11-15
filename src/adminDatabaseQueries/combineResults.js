@@ -1,12 +1,6 @@
 'use strict';
 
 const client = require('../client');
-const recalculatePlayerStatistics = require('../coreFunctions/recalculatePlayerStatistics');
-  
-const callRecalculate = () => {
-  console.log('Recalculating players statistics');
-  recalculatePlayerStatistics();
-};
   
 const deleteMergingPlayer = (playerTwoName) => {
   return client.query('DELETE FROM players WHERE name = $1;', [playerTwoName])
@@ -14,7 +8,6 @@ const deleteMergingPlayer = (playerTwoName) => {
       throw error;
     });
 };
-  
   
 const updateLoserNameInSets = (playerOneName, playerTwoName) => {
   return client.query('UPDATE sets SET loser_name = $1 WHERE loser_name = $2;', [playerOneName, playerTwoName])
@@ -39,7 +32,6 @@ const combineResults = (playerOneName, playerTwoName, resolve) => {
           deleteMergingPlayer(playerTwoName)
             .then(() => {
               resolve();
-              callRecalculate();
             })
             .catch((error) => {
               throw error;

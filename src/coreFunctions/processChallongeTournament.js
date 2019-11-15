@@ -1,7 +1,6 @@
 'use strict';
 
 const client = require('../client');
-const recalculatePlayerStatistics = require('./recalculatePlayerStatistics');
 
 const storeTournamentInDatabase = (tournament, playersObject) => {
   const { id, name, numberOfSets } = tournament;
@@ -51,9 +50,6 @@ const storeTournamentInDatabase = (tournament, playersObject) => {
     url,
     date,
   ]);
-
-  console.log('Recalculating player statistics');
-  recalculatePlayerStatistics();
 };
 
 const storeSetInDatabase = (set, tournament, playersObject) => {
