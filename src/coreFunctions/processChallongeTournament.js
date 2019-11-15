@@ -209,10 +209,21 @@ const addToPlayersObject = (playersObject, id, name, sponser, placement) => {
 const checkPlayersForNameAndStoreIfNotFound = (player, playersObject) => {
   console.log('Checking database for player');
 
-  return client.query('SELECT name, sponser FROM players WHERE players.name = $1;', [player.name])
+  const noMultipleSpaces = player.name.replace(/\s{2,}/, '');
+
+  const [playerName] = noMultipleSpaces.match(/\b[^|]+$/);
+  const sponserMatch = noMultipleSpaces.match(/.*\b(?=.\|)/);
+
+  let playerSponser = '';
+
+  if (sponserMatch) {
+    [playerSponser] = sponserMatch;
+  }
+
+  return client.query('SELECT name, sponser FROM players WHERE players.name = $1;', [playerName])
     .then((data) => {
       if (data.rowCount > 0) {
-        console.log('Player found in database: Not stored', player.name);
+        console.log('Player found in database: Not stored', playerName);
         const [foundPlayer] = data.rows;
         const { name, sponser } = foundPlayer;
 
@@ -220,18 +231,7 @@ const checkPlayersForNameAndStoreIfNotFound = (player, playersObject) => {
       }
 
       if (data.rowCount === 0) {
-        const noMultipleSpaces = player.name.replace(/\s{2,}/, '');
-
-        const [name] = noMultipleSpaces.match(/\b[^|]+$/);
-        const sponserMatch = noMultipleSpaces.match(/.*\b(?=.\|)/);
-
-        let sponser = '';
-
-        if (sponserMatch) {
-          [sponser] = sponserMatch;
-        }
-
-        addToPlayersObject(playersObject, player.id, name, sponser, player.final_rank);
+        addToPlayersObject(playersObject, player.id, playerName, playerSponser, player.final_rank);
 
         const jsonObject = JSON.stringify({});
 
@@ -265,8 +265,8 @@ const checkPlayersForNameAndStoreIfNotFound = (player, playersObject) => {
         );`,
         [
           player.id,
-          name,
-          sponser,
+          playerName,
+          playerSponser,
           1800,
           ['unknown'],
           'WA',
