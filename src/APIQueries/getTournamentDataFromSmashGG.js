@@ -46,6 +46,7 @@ const getTournamentDataFromSmashGG = (tournament, event) => {
         eventObject.getStandings()
           .then((standings) => {
             tournamentData.standings = standings;
+            tournamentData.numberOfEntrants = standings.length;
             resolve();
           })
           .catch((error) => {

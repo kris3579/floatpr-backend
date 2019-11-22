@@ -2,30 +2,6 @@
 
 const client = require('../client');
 
-const queryDatabase = (player) => {
-  return client.query('SELECT * FROM sets WHERE winner_name = $1 OR loser_name = $1 ORDER BY date DESC;', [player])
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      throw error;
-    });
-};
-
-const calculateWinRates = (player1Score, player2Score) => {
-  let player1WinRate = ((player1Score / (player1Score + player2Score)) * 100);
-  let player2WinRate = ((player2Score / (player2Score + player1Score)) * 100);
-
-  if (Number.isInteger(player1WinRate) === false) {
-    player1WinRate = player1WinRate.toFixed(2);
-  }
-  if (Number.isInteger(player2WinRate) === false) {
-    player2WinRate = player2WinRate.toFixed(2);
-  }
-
-  return [player1WinRate, player2WinRate];
-};
-
 const sortBySetsPlayed = (matchups) => {
   const matchupObject = {
     allMatchups: [],
@@ -62,20 +38,47 @@ const sortBySetsPlayed = (matchups) => {
   return matchupObject;
 };
 
+const calculateWinRates = (player1Score, player2Score) => {
+  let player1WinRate = ((player1Score / (player1Score + player2Score)) * 100);
+  let player2WinRate = ((player2Score / (player2Score + player1Score)) * 100);
+
+  if (Number.isInteger(player1WinRate) === false) {
+    player1WinRate = player1WinRate.toFixed(2);
+  }
+  if (Number.isInteger(player2WinRate) === false) {
+    player2WinRate = player2WinRate.toFixed(2);
+  }
+
+  return [player1WinRate, player2WinRate];
+};
+
+const queryDatabase = (player) => {
+  return client.query('SELECT * FROM sets WHERE winner_name = $1 OR loser_name = $1 ORDER BY date DESC;', [player])
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      throw error;
+    });
+};
+
 const getIndividualHead2Head = (player) => {
   const allMatchups = {};
 
   return queryDatabase(player)
     .then((sets) => {
       sets.rows.forEach((set) => {
+        const setWinner = set.winner_sponser === '' ? set.winner_name : `${set.winner_sponser} | ${set.winner_name}`;
+        const setLoser = set.loser_sponser === '' ? set.loser_name : `${set.loser_sponser} | ${set.loser_name}`;
+
         if (set.winner_name === player) {
-          const matchupName = `${player} vs ${set.loser_name}`;
+          const matchupName = `${setWinner} vs ${setLoser}`;
           let matchup = allMatchups[matchupName];
           
           if (!matchup) {
             matchup = {
               name: matchupName,
-              opponent: set.loser_name,
+              opponent: setLoser,
               setsPlayed: 1,
               setScore: [1, 0],
               setAvg: [],
@@ -95,13 +98,13 @@ const getIndividualHead2Head = (player) => {
         }
 
         if (set.loser_name === player) {
-          const matchupName = `${player} vs ${set.winner_name}`;
+          const matchupName = `${setLoser} vs ${setWinner}`;
           let matchup = allMatchups[matchupName];
           
           if (!matchup) {
             matchup = {
               name: matchupName,
-              opponent: set.winner_name,
+              opponent: setWinner,
               setsPlayed: 1,
               setScore: [0, 1],
               setAvg: [],
