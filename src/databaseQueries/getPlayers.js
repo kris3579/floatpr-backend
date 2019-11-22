@@ -30,7 +30,7 @@ const activeWashingtonPlayers = (playerList) => {
 
 const allPlayers = (playerList) => {
   const filteredForEnoughAttendance = playerList.filter((player) => {
-    return player.attendance > 4;
+    return player.attendance >= 1;
   });
 
   return filteredForEnoughAttendance;

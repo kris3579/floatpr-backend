@@ -216,7 +216,7 @@ const checkPlayersForNameAndStoreIfNotFound = (player, playersObject) => {
     [playerSponser] = sponserMatch;
   }
 
-  return client.query('SELECT name, sponser FROM players WHERE players.name = $1;', [playerName])
+  return client.query('SELECT name, sponser FROM players WHERE UPPER(players.name) = UPPER($1);', [playerName])
     .then((data) => {
       if (data.rowCount > 0) {
         console.log('Player found in database: Not stored', playerName);
