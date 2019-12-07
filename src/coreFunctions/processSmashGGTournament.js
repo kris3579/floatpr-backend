@@ -60,7 +60,11 @@ const storeSetInDatabase = (set, tournamentData, playersObject) => {
   const tournamentid = tournamentData.tournament.id;
   const tournamentName = tournamentData.tournament.name;
   const date = new Date(set.completedAt * 1000);
-  const round = set.fullRoundText;
+  let round = set.fullRoundText;
+
+  if (round.charAt(0) === 'R') {
+    round = 'Pools';
+  }
 
   let winner;
   let loser;
@@ -164,13 +168,16 @@ const checkPlayersForNameAndStoreIfNotFound = (player, playersObject) => {
   const { id } = player.entrant;
 
   const noMultipleSpaces = player.entrant.name.replace(/\s{2,}/, '');
+  const splitName = noMultipleSpaces.split(' | ');
 
-  const [playerName] = noMultipleSpaces.match(/\b[^|]+$/);
-  const sponserMatch = noMultipleSpaces.match(/.*\b(?=.\|)/);
+  let playerName = '';
   let playerSponser = '';
-  
-  if (sponserMatch) {
-    [playerSponser] = sponserMatch;
+
+  if (splitName.length === 1) {
+    [playerName] = splitName;
+  }
+  if (splitName.length === 2) {
+    [playerSponser, playerName] = splitName;
   }
   
   return client.query('SELECT name, sponser FROM players WHERE UPPER(players.name) = UPPER($1)', [playerName])
@@ -247,7 +254,9 @@ const checkPlayersForNameAndStoreIfNotFound = (player, playersObject) => {
 
 const processTournamentPlayers = (tournamentData) => {
   const playersObject = {};
-  const promises = tournamentData.standings.map((player) => {
+  console.log(tournamentData.standings.length);
+  const promises = tournamentData.standings.map((player, i) => {
+    console.log(i, player);
     return checkPlayersForNameAndStoreIfNotFound(player, playersObject);
   });
 
@@ -261,7 +270,7 @@ const processTournamentPlayers = (tournamentData) => {
 };
 
 const checkDatabaseForTournament = (tournamentData) => {
-  console.log('Checking database for tournament');
+  console.log('Checking database for tournament', tournamentData.tournament);
   return client.query(`SELECT name FROM tournaments WHERE id = ${tournamentData.tournament.id};`)
     .then((data) => {
       if (data.rowCount > 0) {

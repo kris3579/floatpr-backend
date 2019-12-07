@@ -27,10 +27,23 @@ const queryDatabase = (player1, player2) => {
 };
 
 const getPairHead2Head = (player1, player2) => {
-  const player1Name = player1.match(/\b[^|]+$/);
-  const player2Name = player2.match(/\b[^|]+$/);
+  const player1Tag = player1.split(' | ');
+  const player2Tag = player2.split(' | ');
+
+  let [player1Name] = player1Tag;
+  let [player2Name] = player2Tag;
+
+  if (player1Tag.length === 2) {
+    // eslint-disable-next-line prefer-destructuring
+    player1Name = player1Tag[1];
+  }
+  if (player2Tag.length === 2) {
+    // eslint-disable-next-line prefer-destructuring
+    player2Name = player2Tag[1];
+  }
+  console.log(player1Name, player2Name);
   
-  return queryDatabase(player1Name[0], player2Name[0])
+  return queryDatabase(player1Name, player2Name)
     .then((sets) => {
       if (sets.rows.length === 0) {
         return null;
@@ -56,7 +69,7 @@ const getPairHead2Head = (player1, player2) => {
         
         h2HObject.setsArray.push(set);
 
-        if (set.winner_name === player1) {
+        if (set.winner_name === player1Name) {
           h2HObject.setScore[0] += 1;
           h2HObject.gameScore[0] += set.winner_score;
           h2HObject.gameScore[1] += set.loser_score;
@@ -70,7 +83,7 @@ const getPairHead2Head = (player1, player2) => {
           }
         }
 
-        if (set.winner_name === player2) {
+        if (set.winner_name === player2Name) {
           h2HObject.setScore[1] += 1;
           h2HObject.gameScore[0] += set.loser_score;
           h2HObject.gameScore[1] += set.winner_score;
