@@ -25,6 +25,9 @@ const sendNotificationToDiscord = (request, resolve) => {
     case 'combineResults':
       requestText = `Request from user ${request.userTag} to merge the results from secondTag: ${request.secondTag}.`;
       break;
+    case 'reportProblem':
+      requestText = `User ${request.user} reporting problem: ${request.problem}.`;
+      break;
     default:
       break;
   }

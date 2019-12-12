@@ -83,7 +83,6 @@ const getTopPlayerHead2Head = () => {
             if (winnerRank < loserRank) {
               matchupRanks = `${winnerRank}-${loserRank}`;
             }
-
             const matchup = topPlayerH2H[matchupRanks];
 
             if (winnerRank > loserRank) {

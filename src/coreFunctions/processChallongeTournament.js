@@ -64,13 +64,27 @@ const storeSetInDatabase = (set, tournament, playersObject) => {
   const splitScores = set.scores_csv.split('');
   
   let round = '';
+  let mainBracket = true;
 
   if (!set.winner_id || !set.loser_id) {
     return null;
   }
 
-  const winner = playersObject[set.winner_id];
-  const loser = playersObject[set.loser_id];
+  let winner = playersObject[set.winner_id];
+  let loser = playersObject[set.loser_id];
+
+  if (!winner && !loser) {
+    Object.keys(playersObject).forEach((key) => {
+      if (playersObject[key].groupIDs.includes(set.winner_id)) {
+        winner = playersObject[key];
+        mainBracket = false;
+      }
+      if (playersObject[key].groupIDs.includes(set.loser_id)) {
+        loser = playersObject[key];
+        mainBracket = false;
+      }
+    });
+  }
 
   winner.setsPlayed += 1;
   loser.setsPlayed += 1;
@@ -83,36 +97,39 @@ const storeSetInDatabase = (set, tournament, playersObject) => {
   let winnerScore = 0;
   let loserScore = 0;
 
-  if (set.round > 0) {
+  if (set.round > 0 && mainBracket) {
     round = `Winners Round ${Math.abs(set.round)}`;
   }
-  if (set.round < 0) {
+  if (set.round < 0 && mainBracket) {
     round = `Losers Round ${Math.abs(set.round)}`;
   }
-  if (set.round === rounds[1] + 2) {
+  if (set.round === rounds[1] + 2 && mainBracket) {
     round = 'Losers Quarter-final';
   }
-  if (set.round === rounds[1] + 1) {
+  if (set.round === rounds[1] + 1 && mainBracket) {
     round = 'Losers Semi-final';
   }
-  if (set.round === rounds[1]) {
+  if (set.round === rounds[1] && mainBracket) {
     round = 'Losers Final';
   }
-  if (set.round === rounds[0] - 3 && rounds[0] > 5) {
+  if (set.round === rounds[0] - 3 && rounds[0] > 5 && mainBracket) {
     round = 'Winners Quarter-final';
   }
-  if (set.round === rounds[0] - 2) {
+  if (set.round === rounds[0] - 2 && mainBracket) {
     round = 'Winners Semi-final';
   }
-  if (set.round === rounds[0] - 1) {
+  if (set.round === rounds[0] - 1 && mainBracket) {
     round = 'Winners Final';
   }
-  if (set.round === rounds[0]) {
+  if (set.round === rounds[0] && mainBracket) {
     tournament.grandFinalsCounter += 1;
     round = 'Grand Final';
   }
-  if (set.round === rounds[0] && tournament.grandFinalsCounter === 2) {
+  if (set.round === rounds[0] && tournament.grandFinalsCounter === 2 && mainBracket) {
     round = 'Grand Final Reset';
+  }
+  if (!mainBracket) {
+    round = `Round ${set.round}`;
   }
   if (tournament.tournament_type === 'round robin') {
     round = 'Round Robin';
@@ -165,7 +182,6 @@ const storeSetInDatabase = (set, tournament, playersObject) => {
 };
 
 const processTournamentSets = (tournament, playersObject) => {
-  console.log(tournament.matches);
   const promises = tournament.matches.map((set) => {
     return storeSetInDatabase(set.match, tournament, playersObject);
   });
@@ -210,13 +226,14 @@ const filterSetsForTournament = (tournament, playersObject) => {
   processTournamentSets(tournament, playersObject);
 };
 
-const addToPlayersObject = (playersObject, id, name, sponser, placement) => {
-  playersObject[id] = {
-    id,
+const addToPlayersObject = (playersObject, player, name, sponser) => {
+  playersObject[player.id] = {
+    id: player.id,
     name,
     sponser,
-    placement,
+    placement: player.final_rank,
     setsPlayed: 0,
+    groupIDs: player.group_player_ids ? [...player.group_player_ids] : [],
   };
 };
 
@@ -236,6 +253,12 @@ const checkPlayersForNameAndStoreIfNotFound = (player, playersObject) => {
   if (splitName.length === 2) {
     [playerSponser, playerName] = splitName;
   }
+  if (splitName.length > 2) {
+    playerName = splitName[splitName.length - 1];
+    const sponser = [...splitName];
+    sponser.pop();
+    playerSponser = sponser.join(' | ');
+  }
 
   return client.query('SELECT name, sponser FROM players WHERE UPPER(players.name) = UPPER($1);', [playerName])
     .then((data) => {
@@ -244,15 +267,15 @@ const checkPlayersForNameAndStoreIfNotFound = (player, playersObject) => {
         const [foundPlayer] = data.rows;
         const { name, sponser } = foundPlayer;
 
-        addToPlayersObject(playersObject, player.id, name, sponser, player.final_rank);
+        addToPlayersObject(playersObject, player, name, sponser);
       }
 
       if (data.rowCount === 0) {
-        addToPlayersObject(playersObject, player.id, playerName, playerSponser, player.final_rank);
+        addToPlayersObject(playersObject, player, playerName, playerSponser);
 
         const jsonObject = JSON.stringify({});
 
-        console.log('Storing player in database', player.name, player.id);
+        console.log('Storing player in database', playerName, player.id);
         client.query(`INSERT INTO players 
         (
           id,
@@ -326,7 +349,7 @@ const processTournamentPlayers = (tournament) => {
 };
 
 const checkDatabaseForTournament = (tournament) => {
-  console.log('Checking database for tournament', tournament);
+  console.log('Checking database for tournament');
   return client.query(`SELECT name FROM tournaments WHERE id = ${tournament.id};`)
     .then((data) => {
       if (data.rowCount > 0) {

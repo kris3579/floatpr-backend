@@ -26,6 +26,17 @@ const queryDatabase = (player1, player2) => {
     });
 };
 
+const addToMatchupObject = (h2HObject, set, winner, loser) => {
+  h2HObject.setsPlayed += 1;
+  h2HObject.gamesPlayed += set.winner_score + set.loser_score;
+  
+  h2HObject.setsArray.push(set);
+
+  h2HObject.setScore[winner] += 1;
+  h2HObject.gameScore[winner] += set.winner_score;
+  h2HObject.gameScore[loser] += set.loser_score;
+};
+
 const getPairHead2Head = (player1, player2) => {
   const player1Tag = player1.split(' | ');
   const player2Tag = player2.split(' | ');
@@ -41,39 +52,28 @@ const getPairHead2Head = (player1, player2) => {
     // eslint-disable-next-line prefer-destructuring
     player2Name = player2Tag[1];
   }
-  console.log(player1Name, player2Name);
   
+  const h2HObject = {
+    matchupName: '',
+    player1: '',
+    player2: '',
+    setsPlayed: 0,
+    setsArray: [],
+    setScore: [0, 0],
+    setAvg: [],
+    gamesPlayed: 0,
+    gameScore: [0, 0],
+    gameAvg: [],
+  };
+
   return queryDatabase(player1Name, player2Name)
     .then((sets) => {
       if (sets.rows.length === 0) {
         return null;
       }
-    
-      const h2HObject = {
-        matchupName: '',
-        player1: '',
-        player2: '',
-        setsPlayed: 0,
-        setsArray: [],
-        setScore: [0, 0],
-        setAvg: [],
-        gamesPlayed: 0,
-        gameScore: [0, 0],
-        gameAvg: [],
-      };
-    
+   
       sets.rows.forEach((set, i) => {
-        h2HObject.setsPlayed += 1;
-        h2HObject.gamesPlayed += set.winner_score;
-        h2HObject.gamesPlayed += set.loser_score;
-        
-        h2HObject.setsArray.push(set);
-
         if (set.winner_name === player1Name) {
-          h2HObject.setScore[0] += 1;
-          h2HObject.gameScore[0] += set.winner_score;
-          h2HObject.gameScore[1] += set.loser_score;
-
           if (i === sets.rows.length - 1) {
             const p1DisplayName = set.winner_sponser === '' ? set.winner_name : `${set.winner_sponser} | ${set.winner_name}`;
             const p2DisplayName = set.loser_sponser === '' ? set.loser_name : `${set.loser_sponser} | ${set.loser_name}`;
@@ -81,13 +81,11 @@ const getPairHead2Head = (player1, player2) => {
             h2HObject.player1 = p1DisplayName;
             h2HObject.player2 = p2DisplayName;
           }
+
+          addToMatchupObject(h2HObject, set, 0, 1);
         }
 
         if (set.winner_name === player2Name) {
-          h2HObject.setScore[1] += 1;
-          h2HObject.gameScore[0] += set.loser_score;
-          h2HObject.gameScore[1] += set.winner_score;
-
           if (i === sets.rows.length - 1) {
             const p1DisplayName = set.loser_sponser === '' ? set.loser_name : `${set.loser_sponser} | ${set.loser_name}`;
             const p2DisplayName = set.winner_sponser === '' ? set.winner_name : `${set.winner_sponser} | ${set.winner_name}`;
@@ -95,6 +93,8 @@ const getPairHead2Head = (player1, player2) => {
             h2HObject.player1 = p1DisplayName;
             h2HObject.player2 = p2DisplayName;
           }
+
+          addToMatchupObject(h2HObject, set, 1, 0);
         }
 
         h2HObject.setAvg = calculateWinRates(h2HObject.setScore[0], h2HObject.setScore[1]);

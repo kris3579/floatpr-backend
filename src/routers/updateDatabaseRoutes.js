@@ -5,11 +5,12 @@ const express = require('express');
 const updatePlayerRouter = express.Router();
 
 const combineResults = require('../adminDatabaseQueries/combineResults');
-const updateMains = require('../adminDatabaseQueries/updateMains');
-const updateState = require('../adminDatabaseQueries/updateState');
-const updateSponser = require('../adminDatabaseQueries/updateSponser');
-const updateSetSponsers = require('../adminDatabaseQueries/updateSponsers');
+const findSimilarTags = require('../adminDatabaseQueries/findSimilarTags');
 const recalculatePlayerStatistics = require('../coreFunctions/recalculatePlayerStatistics');
+const updateMains = require('../adminDatabaseQueries/updateMains');
+const updateSetSponsers = require('../adminDatabaseQueries/updateSponsers');
+const updateSponser = require('../adminDatabaseQueries/updateSponser');
+const updateState = require('../adminDatabaseQueries/updateState');
 
 updatePlayerRouter.post('/combineResults', (req, res) => {
   const { playerOneName, playerTwoName } = req.body;
@@ -23,6 +24,16 @@ updatePlayerRouter.post('/combineResults', (req, res) => {
     .catch(() => {
       res.sendStatus(500);
     });
+});
+
+updatePlayerRouter.post('/findSimilarTags', (req, res) => {
+  findSimilarTags();
+  res.sendStatus(200);
+});
+
+updatePlayerRouter.post('/updatePlayerStatistics', (req, res) => {
+  recalculatePlayerStatistics();
+  res.sendStatus(200);
 });
 
 updatePlayerRouter.post('/updateMains', (req, res) => {
@@ -40,11 +51,9 @@ updatePlayerRouter.post('/updateMains', (req, res) => {
     });
 });
 
-updatePlayerRouter.post('/updateState', (req, res) => {
-  const { playerName, state } = req.body;
-
+updatePlayerRouter.post('/updateSetSponsers', (req, res) => {
   new Promise((resolve) => {
-    updateState(playerName, state, resolve);
+    updateSetSponsers(resolve);
   })
     .then(() => {
       res.sendStatus(200);
@@ -68,9 +77,11 @@ updatePlayerRouter.post('/updateSponser', (req, res) => {
     });
 });
 
-updatePlayerRouter.post('/updateSetSponsers', (req, res) => {
+updatePlayerRouter.post('/updateState', (req, res) => {
+  const { playerName, state } = req.body;
+
   new Promise((resolve) => {
-    updateSetSponsers(resolve);
+    updateState(playerName, state, resolve);
   })
     .then(() => {
       res.sendStatus(200);
@@ -78,11 +89,6 @@ updatePlayerRouter.post('/updateSetSponsers', (req, res) => {
     .catch(() => {
       res.sendStatus(500);
     });
-});
-
-updatePlayerRouter.post('/updatePlayerStatistics', (req, res) => {
-  recalculatePlayerStatistics();
-  res.sendStatus(200);
 });
 
 module.exports = updatePlayerRouter;

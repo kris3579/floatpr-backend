@@ -14,10 +14,21 @@ const updateSponsers = (resolve) => {
         client.query('SELECT placements FROM tournaments;')
           .then((tournamentsData) => {
             tournamentsData.rows.forEach((tournament) => {
-              const updatedSponsers = tournament.placements.replace(/\s/, player.sponser);
+              const updatedPlacements = JSON.parse(tournament.placements);
+
+              Object.keys(updatedPlacements).forEach((placement) => {
+                placement.forEach((person, i) => {
+                  const personMatch = new RegExp(person);
+                  if (person.match(personMatch)) {
+                    updatedPlacements[placement][i] = player.sponser;
+                  }
+                });
+              });
+
+              JSON.stringify(updatedPlacements);
             
-              if (updatedSponsers !== tournament.placements) {
-                client.query('UPDATE tournaments SET placements = $1;', [updatedSponsers]);
+              if (updatedPlacements !== tournament.placements) {
+                client.query('UPDATE tournaments SET placements = $1;', [updatedPlacements]);
               }
             });
           });

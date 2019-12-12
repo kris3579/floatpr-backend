@@ -35,6 +35,7 @@ const getTournamentDataFromSmashGG = (tournament, event) => {
         })
           .then((sets) => {
             tournamentData.sets = sets;
+            tournamentData.numberOfSets = sets.length;
             resolve();
           })
           .catch((error) => {

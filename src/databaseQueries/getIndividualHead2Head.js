@@ -62,6 +62,49 @@ const queryDatabase = (player) => {
     });
 };
 
+const addToMatchupObject = (winner, loser, position, allMatchups, set) => {
+  const matchupName = position === 'winner' ? `${winner} vs ${loser}` : `${loser} vs ${winner}`;
+  const matchup = allMatchups[matchupName];
+
+  if (matchup) {
+    matchup.setsPlayed += 1;
+    matchup.gamesPlayed += set.winner_score + set.loser_score;
+
+    if (position === 'winner') {
+      matchup.setScore[0] += 1;
+      matchup.gameScore[0] += set.winner_score;
+      matchup.gameScore[1] += set.loser_score;
+    }
+    if (position === 'loser') {
+      matchup.setScore[1] += 1;
+      matchup.gameScore[0] += set.loser_score;
+      matchup.gameScore[1] += set.winner_score;
+    }
+  }
+
+  if (!matchup) {
+    const newMatchup = {};
+    newMatchup.name = matchupName;
+    newMatchup.setsPlayed = 1;
+    newMatchup.setAvg = [];
+    newMatchup.gamesPlayed = set.winner_score + set.loser_score;
+    newMatchup.gameAvg = [];
+
+    if (position === 'winner') {
+      newMatchup.opponent = loser;
+      newMatchup.setScore = [1, 0];
+      newMatchup.gameScore = [set.winner_score, set.loser_score];
+    }
+    if (position === 'loser') {
+      newMatchup.opponent = winner;
+      newMatchup.setScore = [0, 1];
+      newMatchup.gameScore = [set.loser_score, set.winner_score];
+    }
+    
+    allMatchups[matchupName] = newMatchup;
+  }
+};
+
 const getIndividualHead2Head = (player) => {
   const allMatchups = {};
 
@@ -72,55 +115,10 @@ const getIndividualHead2Head = (player) => {
         const setLoser = set.loser_sponser === '' ? set.loser_name : `${set.loser_sponser} | ${set.loser_name}`;
 
         if (set.winner_name === player) {
-          const matchupName = `${setWinner} vs ${setLoser}`;
-          let matchup = allMatchups[matchupName];
-          
-          if (!matchup) {
-            matchup = {
-              name: matchupName,
-              opponent: setLoser,
-              setsPlayed: 1,
-              setScore: [1, 0],
-              setAvg: [],
-              gamesPlayed: set.winner_score + set.loser_score,
-              gameScore: [set.winner_score, set.loser_score],
-              gameAvg: [],
-            };
-
-            allMatchups[matchupName] = matchup;
-          } else {
-            matchup.setsPlayed += 1;
-            matchup.setScore[0] += 1;
-            matchup.gameScore[0] += set.winner_score;
-            matchup.gameScore[1] += set.loser_score;
-            matchup.gamesPlayed += set.winner_score + set.loser_score;
-          }
+          addToMatchupObject(setWinner, setLoser, 'winner', allMatchups, set);
         }
-
         if (set.loser_name === player) {
-          const matchupName = `${setLoser} vs ${setWinner}`;
-          let matchup = allMatchups[matchupName];
-          
-          if (!matchup) {
-            matchup = {
-              name: matchupName,
-              opponent: setWinner,
-              setsPlayed: 1,
-              setScore: [0, 1],
-              setAvg: [],
-              gamesPlayed: set.winner_score + set.loser_score,
-              gameScore: [set.loser_score, set.winner_score],
-              gameAvg: [],
-            };
-            
-            allMatchups[matchupName] = matchup;
-          } else {
-            matchup.setsPlayed += 1;
-            matchup.setScore[1] += 1;
-            matchup.gameScore[0] += set.loser_score;
-            matchup.gameScore[1] += set.winner_score;
-            matchup.gamesPlayed += set.winner_score + set.loser_score;
-          }
+          addToMatchupObject(setWinner, setLoser, 'loser', allMatchups, set);
         }
       });
 

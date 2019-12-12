@@ -87,6 +87,14 @@ const storeSetInDatabase = (set, tournamentData, playersObject) => {
     loserScore += set.score1;
   }
 
+  if (set.score1 === set.score2) {
+    winner = playersObject[set.winnerId];
+    loser = set.winnerId === set.player1.entrantId 
+      ? playersObject[set.player2.entrantId] : playersObject[set.player1.entrantId];
+
+    winnerScore += 2;
+  }
+
   const winnerName = winner.name;
   const winnerSponser = winner.sponser;
   const loserName = loser.name;
@@ -141,19 +149,6 @@ const processTournamentSets = (tournamentData, playersObject) => {
     });
 };
 
-const filterSetsForTournament = (tournamentData, playersObject) => {
-  console.log('Filtering sets for empty scores');
-
-  const filteredForEmptyScores = tournamentData.sets.filter((set) => {
-    return set.score1 !== 0 || set.score2 !== 0;
-  });
-
-  tournamentData.sets = filteredForEmptyScores;
-  tournamentData.numberOfSets = filteredForEmptyScores.length;
-
-  processTournamentSets(tournamentData, playersObject);
-};
-
 const addToPlayersObject = (playersObject, id, name, sponser, placement) => {
   playersObject[id] = {
     id,
@@ -178,6 +173,12 @@ const checkPlayersForNameAndStoreIfNotFound = (player, playersObject) => {
   }
   if (splitName.length === 2) {
     [playerSponser, playerName] = splitName;
+  }
+  if (splitName.length > 2) {
+    playerName = splitName[splitName.length - 1];
+    const sponser = [...splitName];
+    sponser.pop();
+    playerSponser = sponser.join(' | ');
   }
   
   return client.query('SELECT name, sponser FROM players WHERE UPPER(players.name) = UPPER($1)', [playerName])
@@ -254,15 +255,13 @@ const checkPlayersForNameAndStoreIfNotFound = (player, playersObject) => {
 
 const processTournamentPlayers = (tournamentData) => {
   const playersObject = {};
-  console.log(tournamentData.standings.length);
-  const promises = tournamentData.standings.map((player, i) => {
-    console.log(i, player);
+  const promises = tournamentData.standings.map((player) => {
     return checkPlayersForNameAndStoreIfNotFound(player, playersObject);
   });
 
   Promise.all(promises)
     .then(() => {
-      filterSetsForTournament(tournamentData, playersObject);
+      processTournamentSets(tournamentData, playersObject);
     })
     .catch((error) => {
       throw error;
